@@ -23,9 +23,6 @@ public:
     bool loadMachFromFile (StateMachine *mach, std::string const&scxml_file);
     bool loadMachFromString (StateMachine *mach, std::string const&scxml_str);
 
-    void addToActiveMach (StateMachine *mach);
-    void pumpMachEvents ();
-
     std::string const& history_id_resided_state (std::string const&scxml_id, std::string const&history_id) const;
     std::string const& history_type (std::string const&scxml_id, std::string const& state_uid) const;
     std::string const& initial_state_of_state (std::string const&scxml_id, std::string const& state_uid) const;

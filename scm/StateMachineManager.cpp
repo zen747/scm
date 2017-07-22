@@ -101,7 +101,6 @@ size_t splitStringToVector (std::string const &valstr, std::vector<std::string> 
 struct StateMachineManager::PRIVATE
 {
     StateMachineManager     * manager_;
-    std::list<StateMachine *> active_machs_;
     // ids are unique
     std::map <std::string, StateMachine *>              mach_map_;
     std::map <std::string, std::map<std::string, std::string> > onentry_action_map_;
@@ -494,29 +493,6 @@ void StateMachineManager::release_instance()
 StateMachine *StateMachineManager::getMach (std::string const&scxml_id)
 {
     return private_->getMach(scxml_id);
-}
-
-void StateMachineManager::addToActiveMach(StateMachine* mach)
-{
-    assert (mach);
-    if (!mach) return;
-    mach->retain();
-    private_->active_machs_.push_back(mach);
-}
-
-void StateMachineManager::pumpMachEvents()
-{
-    while (!private_->active_machs_.empty ()) {
-        std::list<StateMachine *> machs;
-        machs.swap (private_->active_machs_);
-        std::list<StateMachine *>::iterator it = machs.begin ();
-        std::list<StateMachine *>::iterator it_end = machs.end ();
-        for (; it != it_end; ++it) {
-            (*it)->pumpQueuedEvents ();
-            (*it)->release();
-        }
-    }
-
 }
 
 void StateMachineManager::set_scxml(const string& scxml_id, const string& scxml_str)

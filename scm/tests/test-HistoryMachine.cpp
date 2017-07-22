@@ -212,7 +212,7 @@ public:
         mach_->enqueEvent("d");
         mach_->enqueEvent("a"); // -> stopwatch, what's run and display in?
         
-        StateMachineManager::instance()->pumpMachEvents();
+        mach_->frame_move(0);
     }
 };
 

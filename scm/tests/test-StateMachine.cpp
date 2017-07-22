@@ -212,7 +212,7 @@ public:
     {
         mach_->enqueEvent("punch");
         mach_->enqueEvent("linked");
-        StateMachineManager::instance()->pumpMachEvents();
+        mach_->frame_move(0);
     }
 };
 

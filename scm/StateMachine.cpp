@@ -120,7 +120,9 @@ void StateMachine::onFrameMove (float t)
     if (!slots_connected_) return;
     State::onFrameMove (t);
     pumpTimedEvents();
-    pumpQueuedEvents ();
+    while (!private_->queued_events_.empty()) {
+        pumpQueuedEvents ();
+    }
 }
 
 void StateMachine::pumpQueuedEvents ()
@@ -139,7 +141,6 @@ void StateMachine::pumpQueuedEvents ()
 void StateMachine::enqueEvent(string const&e)
 {
     private_->queued_events_.push_back (e);
-    manager_->addToActiveMach (this);
 }
 
 

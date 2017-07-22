@@ -191,7 +191,7 @@ public:
     
     void frame_move ()
     {
-        StateMachineManager::instance()->pumpMachEvents();
+        mach_->frame_move(0);
     }
     
     void test ()
