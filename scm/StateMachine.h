@@ -40,9 +40,9 @@ class StateMachine : public State
     typedef State super;
 
 protected:
-    typedef std::map<std::string, boost::function<void (FrameMover *, float)> >      frame_move_map;
-    typedef std::map<std::string, boost::function<bool ()> >                         cond_slot_map;
-    typedef std::map<std::string, boost::function<void ()> >                         action_slot_map; // used for onentry, onexit, and ontransit, etc.
+    typedef std::map<std::string, boost::function<void (float)> >  frame_move_map;
+    typedef std::map<std::string, boost::function<bool ()> >       cond_slot_map;
+    typedef std::map<std::string, boost::function<void ()> >       action_slot_map; // used for onentry, onexit, and ontransit, etc.
 
     std::string scxml_id_;
 
@@ -153,7 +153,7 @@ public:
 
     bool GetCondSlot (std::string const&name, boost::function<bool ()> &s);
     bool GetActionSlot (std::string const&name, boost::function<void()> &s);
-    bool GetFrameMoveSlot (std::string const&name, boost::function<void (FrameMover *, float)> &s);
+    bool GetFrameMoveSlot (std::string const&name, boost::function<void (float)> &s);
 
     /** 建立 name 與 slot s 的對應，以供scxml 中的 cond 條件使用。
      * Mapping name and condition slot. Used in Transition conditions.
@@ -166,7 +166,7 @@ public:
     /** 建立 name 與 slot s 的對應，以供scxml 中各state的 frame_move 使用。
      * Mapping namd and frame_move slot. Used in state's frame_move.
      */
-    void setFrameMoveSlot (std::string const&name, boost::function<void (FrameMover *, float)> const &s);
+    void setFrameMoveSlot (std::string const&name, boost::function<void (float)> const &s);
 
     StateMachine* clone ();
 
@@ -220,11 +220,8 @@ private:
 #define REGISTER_ACTION_SLOT(mach, action, method, obj) \
 	mach->setActionSlot (action, boost::bind(method, obj));
 
-#define REGISTER_TOUCH_ACTION_SLOT(mach, touch_action, method, obj) \
-	mach->setTouchActionSlot (touch_action, boost::bind(method, obj, _1, _2));
-
 #define REGISTER_FRAME_MOVE_SLOT(mach, state, method, obj) \
-	mach->setFrameMoveSlot (state, boost::bind(method, obj, _1, _2));
+	mach->setFrameMoveSlot (state, boost::bind(method, obj, _1));
 
 #define REGISTER_COND_SLOT(mach, cond, method, obj) \
 	mach->setCondSlot (cond, boost::bind(method, obj));

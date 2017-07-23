@@ -43,12 +43,12 @@ public:
         REGISTER_STATE_SLOT (mach_, "disabled", &TheCandyMachine::onentry_disabled, &TheCandyMachine::onexit_disabled, this);
 
         //boost::function<bool() const> cond_slot;
-        mach_->setCondSlot("condNoCandy", boost::bind(&TheCandyMachine::condNoCandy, this));
-        mach_->setCondSlot("condNoCredit", boost::bind(&TheCandyMachine::condNoCredit, this));
+        REGISTER_COND_SLOT(mach_, "condNoCandy", &TheCandyMachine::condNoCandy, this);
+        REGISTER_COND_SLOT(mach_, "condNoCredit", &TheCandyMachine::condNoCredit, this);
         
         // boost::function<void()> 
-        mach_->setActionSlot("releaseCandy", boost::bind(&TheCandyMachine::releaseCandy, this));
-        mach_->setActionSlot("withdrawCoins", boost::bind(&TheCandyMachine::withdrawCoins, this));
+        REGISTER_ACTION_SLOT(mach_, "releaseCandy", &TheCandyMachine::releaseCandy, this);
+        REGISTER_ACTION_SLOT(mach_, "withdrawCoins", &TheCandyMachine::withdrawCoins, this);
         
         mach_->StartEngine();
     }

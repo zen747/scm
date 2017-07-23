@@ -328,7 +328,7 @@ bool StateMachine::GetActionSlot (string const&name, boost::function<void ()> &s
     return false;
 }
 
-bool StateMachine::GetFrameMoveSlot (std::string const&name, boost::function<void (FrameMover *, float)> &s)
+bool StateMachine::GetFrameMoveSlot (std::string const&name, boost::function<void (float)> &s)
 {
     if (!frame_move_slots_) return false;
 
@@ -359,7 +359,7 @@ void StateMachine::setActionSlot (std::string const&name, boost::function<void (
     (*action_slots_)[name] = s;
 }
 
-void StateMachine::setFrameMoveSlot (std::string const&name, boost::function<void (FrameMover *, float)> const &s)
+void StateMachine::setFrameMoveSlot (std::string const&name, boost::function<void (float)> const &s)
 {
     if (!frame_move_slots_) {
         frame_move_slots_ = new frame_move_map;

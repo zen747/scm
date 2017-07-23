@@ -186,7 +186,7 @@ void Parallel::onFrameMove (float t)
     if (!this->active_) return;
 
     for (size_t i=0; i < frame_move_slots_.size(); ++i) {
-        frame_move_slots_[i] (this, t);
+        frame_move_slots_[i] (t);
     }
 }
 

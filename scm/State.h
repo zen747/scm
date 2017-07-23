@@ -83,7 +83,7 @@ protected:
     std::vector<boost::shared_ptr<Transition> >    no_event_transitions_;
     std::vector<boost::shared_ptr<Transition> >    transitions_;
 
-    std::vector<boost::function<void (FrameMover *, float)> > frame_move_slots_;
+    std::vector<boost::function<void (float)> > frame_move_slots_;
 
 
 public:

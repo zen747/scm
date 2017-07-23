@@ -582,7 +582,7 @@ void State::connectActionSlots ()
 
     string const &frame_move = machine_->frame_move_action(this->state_uid());
     if (!frame_move.empty ()) {
-        boost::function<void(FrameMover *, float)> sf;
+        boost::function<void(float)> sf;
         if (this->machine_->GetFrameMoveSlot (frame_move, sf)) {
             frame_move_slots_.push_back(sf);
         } else if (frame_move != state_uid()) { // specified frame_move slot but not found
@@ -653,7 +653,7 @@ void State::onFrameMove (float t)
     if (!this->active_) return;
 
     for (size_t i=0; i < frame_move_slots_.size(); ++i) {
-        frame_move_slots_[i] (this, t);
+        frame_move_slots_[i] (t);
     }
 }
 
