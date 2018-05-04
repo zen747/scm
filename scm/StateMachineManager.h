@@ -1,8 +1,8 @@
 #ifndef StateMachineManager_H
 #define StateMachineManager_H
 
-#include <StateMachine.h>
-#include <uncopyable.h>
+#include "StateMachine.h"
+#include "uncopyable.h"
 
 namespace SCM {
 

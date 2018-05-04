@@ -1,5 +1,5 @@
-#include <StateMachineManager.h>
-#include <uncopyable.h>
+#include <scm/StateMachineManager.h>
+#include <scm/uncopyable.h>
 
 #include <iostream>
 

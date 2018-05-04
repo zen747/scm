@@ -1,7 +1,7 @@
 #ifndef Parallel_H
 #define Parallel_H
 
-#include <State.h>
+#include "State.h"
 
 namespace SCM {
 

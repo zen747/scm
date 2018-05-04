@@ -6,8 +6,8 @@
 #include <list>
 #include <set>
 
-#include <RefCountObject.h>
-#include <FrameMover.h>
+#include "RefCountObject.h"
+#include "FrameMover.h"
 
 namespace SCM {
 

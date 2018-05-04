@@ -1,9 +1,9 @@
 ﻿#ifndef StateMachine_H
 #define StateMachine_H
 
-#include <State.h>
-#include <Parallel.h>
-#include <RefCountObject.h>
+#include "State.h"
+#include "Parallel.h"
+#include "RefCountObject.h"
 
 #include <string>
 #include <map>

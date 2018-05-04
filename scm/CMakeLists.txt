@@ -11,7 +11,6 @@ INCLUDE_DIRECTORIES(${EXPAT_INCLUDE_DIRS})
 
 # definitions
 ADD_DEFINITIONS ("-DXML_STATIC")
-INCLUDE_DIRECTORIES(".")
 
 # source files
 set (STATE_SRCS 
@@ -32,14 +31,4 @@ set (STATE_SRCS
 add_library(scm STATIC ${STATE_SRCS})
 install (TARGETS scm DESTINATION lib)
 
-add_executable (test_state_machine tests/test-StateMachine.cpp)
-target_link_libraries (test_state_machine scm expat)
-install (TARGETS test_state_machine DESTINATION bin)
-
-add_executable (test_candy_machine tests/test-CandyMachine.cpp)
-target_link_libraries (test_candy_machine scm expat)
-install (TARGETS test_candy_machine DESTINATION bin)
-
-add_executable (test_history_machine tests/test-HistoryMachine.cpp)
-target_link_libraries (test_history_machine scm expat)
-install (TARGETS test_history_machine DESTINATION bin)
+add_subdirectory(tests)
