@@ -2,7 +2,7 @@
 #include "StateMachineManager.h"
 #include <sstream>
 #include <cassert>
-
+#include <iostream>
 using namespace std;
 
 namespace SCM {
@@ -33,7 +33,6 @@ struct StateMachine::PRIVATE
     {
     }
 
-    void loadSCXMLFile (std::string const &filepath);
     void loadSCXMLString (std::string const&xmlstr);
 
 };
@@ -99,6 +98,7 @@ void StateMachine::addState (State *state)
     if (!state) return;
     string uid = state->state_uid();    
     states_map_[uid] = state;
+    //cout << "addState " << state->state_uid() << endl;
 }
 
 void StateMachine::removeState (State *state)
@@ -106,6 +106,7 @@ void StateMachine::removeState (State *state)
     assert (state && "remove state error!");
     if (!state) return;
     if (states_map_[state->state_uid()] == state) states_map_.erase(state->state_uid());
+    //cout << "removeState " << state->state_uid() << endl;
 }
 
 bool StateMachine::inState (std::string const &state_uid) const
@@ -277,17 +278,6 @@ void StateMachine::destroy_machine (bool do_exit_state)
     action_slots_ = 0;
 
     engine_started_ = false;
-}
-
-void StateMachine::PRIVATE::loadSCXMLFile (string const &filepath)
-{
-    if (mach_->scxml_loaded_) mach_->destroy_machine ();
-    mach_->scxml_loaded_ = mach_->manager_->loadMachFromFile (mach_, filepath);
-    if (!mach_->scxml_loaded_) {
-        mach_->destroy_machine ();
-        mach_->onLoadScxmlFailed ();
-        assert ("load scxml file failed." && 0);
-    }
 }
 
 void StateMachine::PRIVATE::loadSCXMLString (std::string const&xmlstr)

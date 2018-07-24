@@ -25,6 +25,31 @@ std::string cm_scxml = "\
     </scxml> \
 ";
 
+std::string cm_json = "{\
+    'scxml' : { \
+        'state' : {\
+            'id': 'idle',\
+            'transition' : { 'event':'empty', 'target': 'disabled' },\
+            'transition' : { 'event':'coin', 'target': 'active' }\
+        },\
+        'state' : {\
+            'id': 'active',\
+            'transition' : { 'event':'release-candy', 'ontransit':'releaseCandy', 'target': 'releasing'},\
+            'transition' : { 'event':'withdraw-coin', 'ontransit':'withdrawCoins', 'target': 'idle'}\
+        },\
+        'state' : {\
+            'id': 'releasing',\
+            'transition' : { 'event':'candy-released', 'cond':'condNoCandy', 'target': 'disabled' },\
+            'transition' : { 'event':'candy-released', 'target': 'idle' }\
+        },\
+        'state' : {\
+            'id': 'disabled',\
+            'transition' : { 'event':'add-candy', 'cond':'condNoCredit', 'target': 'idle' },\
+            'transition' : { 'event':'add-candy', 'target': 'active' }\
+        }\
+    }\
+}";
+
 class TheCandyMachine : public Uncopyable
 {
     StateMachine *mach_;
@@ -237,7 +262,13 @@ public:
 int main(int argc, char* argv[])
 {
     AutoReleasePool apool;
+#if USE_JSON
+    StateMachineManager::instance()->set_scxml("cm_scxml", cm_json);
+#else
     StateMachineManager::instance()->set_scxml("cm_scxml", cm_scxml);
+#endif
+//    StateMachineManager::instance()->set_scxml_file("cm_scxml", "cm.scxml"); // optionally through a file
+//    StateMachineManager::instance()->prepare_machs(); // optionally load all scxml at once or getMach() on the fly
     {
         TheCandyMachine mach;
         mach.init ();

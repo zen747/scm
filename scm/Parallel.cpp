@@ -129,7 +129,6 @@ void Parallel::exitState ()
     }
 
     active_ = false;
-    machine_->current_leaf_state_ = this;
 
     signal_onexit ();
 }

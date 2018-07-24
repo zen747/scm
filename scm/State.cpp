@@ -40,30 +40,17 @@ struct State::PRIVATE
 
 
 State::State (std::string const& state_id, State* parent, StateMachine *machine)
-    : parent_(parent), state_id_(state_id), current_state_(0), machine_(machine), depth_(0)
-    , is_a_final_(false), done_(false), active_(false), is_unique_id_(true), slots_ready_(false)
+    : parent_(parent), current_state_(0), machine_(machine), depth_(0)
+    , is_a_final_(false), done_(false), active_(false), is_unique_state_id_(true), slots_ready_(false)
 {
     private_ = new PRIVATE(this);
 
-    if (state_id_.empty()) { // anonymous state
-        ostringstream stream;
-        stream << "_st" << machine_->num_of_states();;
-        state_id_ = stream.str();
-    } else {
-        is_unique_id_ = machine_->is_unique_id(state_id_);
-    }
-    
     if (parent_) {
         this->depth_ = parent_->depth_ + 1;
     }
 
-    if (this->is_unique_id_) {
-        state_uid_ = this->state_id_;
-    } else {
-        state_uid_ = parent_->state_uid() + "." + this->state_id_;
-    }
-
-    if (machine_ != this) machine_->addState (this);
+    set_state_id (state_id);
+    
 }
 
 State::~State ()
@@ -75,6 +62,43 @@ State::~State ()
 
     delete private_;
 }
+
+void State::set_state_id(const string& id)
+{
+    assert (!slots_ready_ && "slots ready, can't change state uid!");
+    if (slots_ready_) {
+        return;
+    }
+    
+    if (!state_id_.empty() && machine_ != this) {
+        machine_->removeState(this);
+    }
+    
+    state_id_ = id;
+    
+    if (state_id_.empty()) { // anonymous state
+        if (machine_ == this) {
+            state_id_ = "_root";
+        } else {
+            ostringstream stream;
+            stream << "_st" << machine_->num_of_states();;
+            state_id_ = stream.str();
+        }
+    } else {
+        is_unique_state_id_ = machine_->is_unique_id(state_id_);
+    }
+
+    if (this->is_unique_state_id_) {
+        state_uid_ = this->state_id_;
+    } else {
+        state_uid_ = parent_->state_uid() + "." + this->state_id_;
+    }
+
+    if (machine_ != this) { // delay addState to after machine_ construction complete.
+        machine_->addState (this);
+    }
+}
+
 
 State *State::clone (State *parent, StateMachine *m)
 {
@@ -96,7 +120,7 @@ void State::clone_data (State *rhs)
     depth_ = rhs->depth_;
     is_a_final_ = rhs->is_a_final_;
     private_->leaving_delay_ = rhs->private_->leaving_delay_;
-    is_unique_id_ = rhs->is_unique_id_;
+    is_unique_state_id_ = rhs->is_unique_state_id_;
 }
 
 void State::clear_substates ()
@@ -177,7 +201,6 @@ void State::exitState ()
     }
 
     active_ = false;
-    machine_->current_leaf_state_ = this;
     this->current_state_ = 0;
 
     signal_onexit ();

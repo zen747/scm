@@ -87,6 +87,165 @@ std::string watch_scxml = "\
     </scxml> \
 ";
 
+std::string watch_json = "{\n\
+    'scxml': {\n\
+        'non-unique': 'on,off',\n\
+        'state': {\n\
+            'id': 'time', \n\
+            'transition': {\n\
+                'event':'a',\n\
+                'target':'alarm1' \n\
+            },\n\
+            'transition': {\n\
+                'event':'c_down',\n\
+                'target': 'wait'\n\
+            }\n\
+        },\n\
+        'state': {\n\
+            'id': 'wait', \n\
+            'transition': {\n\
+                'event':'c_up',\n\
+                'target': 'time' \n\
+            },\n\
+            'transition': {\n\
+                'event': '2_sec',\n\
+                'target': 'update'\n\
+            }\n\
+        },\n\
+        'state': {\n\
+            'id':'update', \n\
+            'history': {\n\
+                'id':'histu', \n\
+                'type': 'shallow'\n\
+            },\n\
+            'transition': {\n\
+                'event': 'd',\n\
+                'target': 'histu' \n\
+            },\n\
+            'state': {\n\
+                'id':'sec', \n\
+                'transition': {\n\
+                    'event':'c',\n\
+                    'target':'1min' \n\
+                }\n\
+            },\n\
+            'state': {\n\
+                'id': '1min', \n\
+                'transition': {\n\
+                    'event':'c',\n\
+                    'target': '10min' \n\
+                }\n\
+            },\n\
+            'state': {\n\
+                'id':'10min', \n\
+                'transition': {\n\
+                    'event': 'c',\n\
+                    'target':'hr' \n\
+                }\n\
+            },\n\
+            'state': {\n\
+                'id':'hr', \n\
+                'transition': {\n\
+                    'event':'c',\n\
+                    'target':'time' \n\
+                }\n\
+            }\n\
+        }, \n\
+        'state': {\n\
+            'id':'alarm1',\n\
+            'history':'shallow', \n\
+            'transition': {\n\
+                'event':'a',\n\
+                'target':'alarm2' \n\
+            },\n\
+            'state':{\n\
+                'id':'off', \n\
+                'transition': {\n\
+                    'event':'d',\n\
+                    'target':'on' \n\
+                }\n\
+            },\n\
+            'state': {\n\
+                'id':'on', \n\
+                'transition': {\n\
+                    'event':'d',\n\
+                    'target':'off' \n\
+                }\n\
+            }\n\
+        }, \n\
+        'state': {\n\
+            'id':'alarm2',\n\
+            'history':'shallow', \n\
+            'transition': {\n\
+                'event':'a',\n\
+                'target':'chime' \n\
+            },\n\
+            'state': {\n\
+                'id':'off', \n\
+                'transition': {\n\
+                    'event':'d',\n\
+                    'target':'on' \n\
+                }\n\
+            },\n\
+            'state': {\n\
+                'id':'on', \n\
+                'transition':{\n\
+                    'event':'d',\n\
+                    'target':'off' \n\
+                }\n\
+            } \n\
+        },\n\
+        'state': {\n\
+            'id':'chime',\n\
+            'history':'shallow', \n\
+            'transition': {\n\
+                'event':'a',\n\
+                'target':'stopwatch' \n\
+            },\n\
+            'state': {\n\
+                'id':'off', \n\
+                'transition': {\n\
+                    'event':'d',\n\
+                    'target':'on' \n\
+                }\n\
+            },\n\
+            'state': {\n\
+                'id':'on', \n\
+                'transition': {\n\
+                    'event':'d',\n\
+                    'target':'off'\n\
+                }\n\
+            }\n\
+        },\n\
+        'state': {\n\
+            'id':'stopwatch',\n\
+            'history':'deep', \n\
+            'transition': { 'event':'a', 'target':'time'}, \n\
+            'state': { 'id':'zero', \n\
+                'transition': { 'event':'b', 'target':'on,regular'} \n\
+            }, \n\
+            'parallel': { \n\
+                'state': { 'id':'run', \n\
+                    'state': { 'id':'on',  \n\
+                        'transition': { 'event':'b', 'target':'off'} \n\
+                    }, \n\
+                    'state': { 'id':'off', \n\
+                        'transition': { 'event':'b', 'target':'on'} \n\
+                    } \n\
+                }, \n\
+                'state': { 'id':'display', \n\
+                    'state': { 'id':'regular', \n\
+                        'transition': { 'event':'d', 'cond':'In(on)', 'target':'lap'}, \n\
+                        'transition': { 'event':'d', 'cond':'In(off)', 'target':'zero'} \n\
+                    }, \n\
+                    'state': { 'id':'lap', \n\
+                        'transition': { 'event':'d', 'target':'regular'} \n\
+                    } \n\
+                } \n\
+            } \n\
+       } \n\
+    }\n\
+}";
 
 class TheMachine : public Uncopyable
 {
@@ -219,7 +378,11 @@ public:
 int main(int argc, char* argv[])
 {
     AutoReleasePool apool;
+#if USE_XML
     StateMachineManager::instance()->set_scxml("watch", watch_scxml);
+#else
+    StateMachineManager::instance()->set_scxml("watch", watch_json);
+#endif
     {
         TheMachine mach;
         mach.test ();

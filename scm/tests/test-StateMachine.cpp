@@ -45,6 +45,82 @@ std::string client_scxml = "\
     </scxml> \
 ";
 
+std::string client_json = "{\
+    'scxml': {\
+        'state': {\
+            'id': 'new', \
+            'transition': {\
+                'event': 'punch',\
+                'target': 'punching'\
+            }\
+        },\
+        'parallel': {\
+            'id': 'live', \
+            'state': {\
+                'id': 'punch', \
+                'transition': {\
+                    'event': 'fail',\
+                    'target': 'punch_fail'\
+                },\
+                'state': {\
+                    'id': 'punching',\
+                    'transition': {\
+                        'event': 'linked',\
+                        'target': 'linked'\
+                    }\
+                },\
+                'state': {\
+                    'id': 'linked',\
+                    'transition': {\
+                        'event': 'established',\
+                        'target': 'punch_success'\
+                    }\
+                },\
+                'state': {\
+                    'id': 'punch_success'\
+                },\
+                'state': {\
+                    'id': 'punch_fail',\
+                    'transition': {\
+                        'event': 'try_again', \
+                        'target': 'punching' \
+                    }\
+                }\
+            },\
+            'state': {\
+                'id': 'mode',\
+                'state': {\
+                    'id': 'relay',\
+                    'state': {\
+                        'id':'relay_init',\
+                        'transition': {\
+                            'event': 'cipher_ready',\
+                            'target': 'relay_work'\
+                        }\
+                    },\
+                    'state': {\
+                        'id': 'relay_work', \
+                        'transition': {\
+                            'cond': 'In(punch_success)',\
+                            'target': 'established'\
+                        }\
+                    }\
+                },\
+                'state': {\
+                    'id': 'established'\
+                }\
+            }\
+        },\
+        'transition': {\
+            'event': 'close',\
+            'target': 'closed'\
+        },\
+        'final': {\
+            'id': 'closed'\
+        }\
+    }\
+}\
+";
 
 class TheMachine : public Uncopyable
 {
@@ -219,7 +295,11 @@ public:
 int main(int argc, char* argv[])
 {
     AutoReleasePool apool;
+#if USE_XML
     StateMachineManager::instance()->set_scxml("test-machine", client_scxml);
+#else
+    StateMachineManager::instance()->set_scxml("test-machine", client_json);
+#endif
     {
         TheMachine mach;
         mach.test ();

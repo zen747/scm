@@ -72,7 +72,7 @@ protected:
     bool         slots_ready_;
 
     bool         active_;
-    bool         is_unique_id_;
+    bool         is_unique_state_id_;
 
     std::string  state_id_;
     std::string  state_uid_;
@@ -99,6 +99,8 @@ public:
 
     void clear_substates ();
 
+    void set_state_id (std::string const&id);
+    
     inline std::string const & state_id () const
     {
         return state_id_;

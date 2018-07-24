@@ -1,5 +1,5 @@
-#ifndef UNCOPYABLE_H
-#define UNCOPYABLE_H
+#ifndef SCM_UNCOPYABLE_H
+#define SCM_UNCOPYABLE_H
 
 namespace SCM {
     

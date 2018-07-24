@@ -8,301 +8,116 @@ using namespace SCM;
 
 std::string client_scxml = "\
    <scxml> \
-       <state id='new'> \
-           <transition event='punch' target='punching'/> \
+       <state id='appear'> \
+           <transition event='born' ontransit='say_hello' target='live'/> \
        </state> \
        <parallel id='live'> \
-            <state id='punch'> \
-                <transition event='fail' target='punch_fail'/> \
-                <state id='punching'> \
-                    <transition event='linked' target='linked'/> \
-                </state> \
-                <state id='linked'> \
-                    <transition event='established' target='punch_success'/> \
-                </state> \
-                <state id='punch_success'> \
-                </state> \
-                <state id='punch_fail'> \
-                    <transition event='try_again' target='punching'/> \
-                </state> \
+            <transition event='hp_zero' target='dead'/> \
+            <state id='eat'> \
             </state> \
-            <state id='mode'> \
-                <state id='relay'> \
-                    <state id='relay_init'> \
-                        <transition event='cipher_ready' target='relay_work'/> \
-                    </state> \
-                    <state id='relay_work'> \
-                        <transition cond='In(punch_success)' target='established'/> \
-                    </state> \
-                </state> \
-                <state id='established'> \
-                </state> \
+            <state id='move'> \
             </state> \
        </parallel> \
-       <transition event='close' target='closed'/> \
-       <final id='closed'>' \
-       </final> \
+       <final id='dead'/>' \
     </scxml> \
 ";
 
-std::string client_json = "{\
-    'scxml': {\
-        'state': {\
-            'id': 'new', \
-            'transition': {\
-                'event': 'punch',\
-                'target': 'punching'\
-            }\
-        },\
-        'parallel': {\
-            'id': 'live', \
-            'state': {\
-                'id': 'punch', \
-                'transition': {\
-                    'event': 'fail',\
-                    'target': 'punch_fail'\
-                },\
-                'state': {\
-                    'id': 'punching',\
-                    'transition': {\
-                        'event': 'linked',\
-                        'target': 'linked'\
-                    }\
-                },\
-                'state': {\
-                    'id': 'linked',\
-                    'transition': {\
-                        'event': 'established',\
-                        'target': 'punch_success'\
-                    }\
-                },\
-                'state': {\
-                    'id': 'punch_success'\
-                },\
-                'state': {\
-                    'id': 'punch_fail',\
-                    'transition': {\
-                        'event': 'try_again', \
-                        'target': 'punching' \
-                    }\
-                }\
-            },\
-            'state': {\
-                'id': 'mode',\
-                'state': {\
-                    'id': 'relay',\
-                    'state': {\
-                        'id':'relay_init',\
-                        'transition': {\
-                            'event': 'cipher_ready',\
-                            'target': 'relay_work'\
-                        }\
-                    },\
-                    'state': {\
-                        'id': 'relay_work', \
-                        'transition': {\
-                            'cond': 'In(punch_success)',\
-                            'target': 'established'\
-                        }\
-                    }\
-                },\
-                'state': {\
-                    'id': 'established'\
-                }\
-            }\
-        },\
-        'transition': {\
-            'event': 'close',\
-            'target': 'closed'\
-        },\
-        'final': {\
-            'id': 'closed'\
-        }\
-    }\
-}\
-";
-
-class TheMachine : public Uncopyable
+class Life: public Uncopyable
 {
     StateMachine *mach_;
     
 public:
-    TheMachine()
+    Life()
     {
-        mach_ = StateMachineManager::instance()->getMach("test-machine");
+        mach_ = StateMachineManager::instance()->getMach("the life");
         mach_->retain();
-        REGISTER_STATE_SLOT (mach_, "new", &TheMachine::onentry_new, &TheMachine::onexit_new, this);
-        REGISTER_STATE_SLOT (mach_, "live", &TheMachine::onentry_live, &TheMachine::onexit_live, this);
-        REGISTER_STATE_SLOT (mach_, "punch", &TheMachine::onentry_punch, &TheMachine::onexit_punch, this);
-        REGISTER_STATE_SLOT (mach_, "punching", &TheMachine::onentry_punching, &TheMachine::onexit_punching, this);
-        REGISTER_STATE_SLOT (mach_, "linked", &TheMachine::onentry_linked, &TheMachine::onexit_linked, this);
-        REGISTER_STATE_SLOT (mach_, "punch_success", &TheMachine::onentry_punch_success, &TheMachine::onexit_punch_success, this);
-        REGISTER_STATE_SLOT (mach_, "punch_fail", &TheMachine::onentry_punch_fail, &TheMachine::onexit_punch_fail, this);
-        REGISTER_STATE_SLOT (mach_, "mode", &TheMachine::onentry_mode, &TheMachine::onexit_mode, this);
-        REGISTER_STATE_SLOT (mach_, "relay", &TheMachine::onentry_relay, &TheMachine::onexit_relay, this);
-        REGISTER_STATE_SLOT (mach_, "relay_init", &TheMachine::onentry_relay_init, &TheMachine::onexit_relay_init, this);
-        REGISTER_STATE_SLOT (mach_, "relay_work", &TheMachine::onentry_relay_work, &TheMachine::onexit_relay_work, this);
-        REGISTER_STATE_SLOT (mach_, "established", &TheMachine::onentry_established, &TheMachine::onexit_established, this);
-        REGISTER_STATE_SLOT (mach_, "closed", &TheMachine::onentry_closed, &TheMachine::onexit_closed, this);
-
+        mach_->set_do_exit_state_on_destroy(true);
+        REGISTER_STATE_SLOT (mach_, "appear", &Life::onentry_appear, &Life::onexit_appear, this);
+        REGISTER_STATE_SLOT (mach_, "live", &Life::onentry_live, &Life::onexit_live, this);
+        REGISTER_STATE_SLOT (mach_, "eat", &Life::onentry_eat, &Life::onexit_eat, this);
+        REGISTER_STATE_SLOT (mach_, "move", &Life::onentry_move, &Life::onexit_move, this);
+        REGISTER_STATE_SLOT (mach_, "dead", &Life::onentry_dead, &Life::onexit_dead, this);
+        REGISTER_ACTION_SLOT(mach_, "say_hello", &Life::say_hello, this);
         mach_->StartEngine();
     }
     
-    ~TheMachine ()
+    ~Life ()
     {
         mach_->release();
     }
     
-    void onentry_new ()
+    void onentry_appear ()
     {
-        cout << "onentry_new" << endl;
+        cout << "come to exist" << endl;
     }
     
-    void onexit_new ()
+    void onexit_appear()
     {
-        cout << "onexit_new" << endl;
+        cout << "we are going to..." << endl;
     }
     
     void onentry_live ()
     {
-        cout << "onentry_live" << endl;
+        cout << "start living" << endl;
     }
     
     void onexit_live ()
     {
-        cout << "onexit_live" << endl;
+        cout << "no longer live" << endl;
     }
     
-    void onentry_punch ()
+    void onentry_eat ()
     {
-        cout << "onentry_punch" << endl;
+        cout << "start eating" << endl;
     }
     
-    void onexit_punch ()
+    void onexit_eat ()
     {
-        cout << "onexit_punch" << endl;
+        cout << "stop eating" << endl;
     }
     
-    void onentry_punching ()
+    void onentry_move ()
     {
-        cout << "onentry_punching" << endl;
+        cout << "start moving" << endl;
     }
     
-    void onexit_punching ()
+    void onexit_move ()
     {
-        cout << "onexit_punching" << endl;
+        cout << "stop moving" << endl;
     }
     
-    void onentry_linked ()
+    void onentry_dead ()
     {
-        cout << "onentry_linked" << endl;
+        cout << "end" << endl;
     }
     
-    void onexit_linked ()
+    void onexit_dead ()
     {
-        cout << "onexit_linked" << endl;
+        assert (0 && "should not exit final state");
+        cout << "no, this won't get called." << endl;
     }
     
-    void onentry_punch_success ()
+    void say_hello ()
     {
-        cout << "onentry_punch_success" << endl;
-    }
-    
-    void onexit_punch_success ()
-    {
-        cout << "onexit_punch_success" << endl;
-    }
-    
-    void onentry_punch_fail ()
-    {
-        cout << "onentry_punch_fail" << endl;
-    }
-    
-    void onexit_punch_fail ()
-    {
-        cout << "onexit_punch_fail" << endl;
-    }
-    
-    void onentry_mode ()
-    {
-        cout << "onentry_mode" << endl;
-    }
-    
-    void onexit_mode ()
-    {
-        cout << "onexit_mode" << endl;
-    }
-    
-    void onentry_relay ()
-    {
-        cout << "onentry_relay" << endl;
-    }
-    
-    void onexit_relay ()
-    {
-        cout << "onexit_relay" << endl;
-    }
-    
-    void onentry_relay_init ()
-    {
-        cout << "onentry_relay_init" << endl;
-    }
-    
-    void onexit_relay_init ()
-    {
-        cout << "onexit_relay_init" << endl;
-    }
-    
-    void onentry_relay_work ()
-    {
-        cout << "onentry_relay_work" << endl;
-    }
-    
-    void onexit_relay_work ()
-    {
-        cout << "onexit_relay_work" << endl;
-    }
-    
-    void onentry_established ()
-    {
-        cout << "onentry_established" << endl;
-    }
-    
-    void onexit_established ()
-    {
-        cout << "onexit_established" << endl;
-    }
-    
-    void onentry_closed ()
-    {
-        cout << "onentry_closed" << endl;
-    }
-    
-    void onexit_closed ()
-    {
-        assert(0 && "exit final");
-        cout << "onexit_closed" << endl;
+        cout << "\n*** Hello, World! ***\n" << endl;
     }
     
     void test ()
     {
-        mach_->enqueEvent("punch");
-        mach_->enqueEvent("linked");
-        mach_->frame_move(0);
+        mach_->enqueEvent("born");
+        mach_->frame_move(0); // state change to 'live'
+        mach_->enqueEvent("hp_zero");
+        mach_->frame_move(0); // state change to 'dead'
     }
 };
 
 int main(int argc, char* argv[])
 {
     AutoReleasePool apool;
-#if USE_XML
-    StateMachineManager::instance()->set_scxml("test-machine", client_scxml);
-#else
-    StateMachineManager::instance()->set_scxml("test-machine", client_json);
-#endif
+    StateMachineManager::instance()->set_scxml("the life", client_scxml);
     {
-        TheMachine mach;
-        mach.test ();
+        Life life;
+        life.test ();
     }
     return 0;
 }

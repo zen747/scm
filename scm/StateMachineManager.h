@@ -18,6 +18,7 @@ public:
     StateMachine *getMach (std::string const&scxml_id);
     
     void set_scxml (std::string const&scxml_id, std::string const&scxml_str);
+    void set_scxml_file (std::string const&scxml_id, std::string const&scxml_filepath);
     void prepare_machs ();
     
     bool loadMachFromFile (StateMachine *mach, std::string const&scxml_file);
