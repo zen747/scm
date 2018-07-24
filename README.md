@@ -1,3 +1,4 @@
+``` {style="color:#1f1c1b;background-color:#ffffff;"}
 This is a c++ library supporting statechart (in scxml format) originated by David Harel.
 Features like hierarchical states, parallel states, and history are ready for you to command.
 You won't find another one as easy and flexible to use as SCM.
@@ -156,4 +157,4 @@ Read the tutorials at
 (English) http://zen747.blogspot.tw/2017/07/a-scm-framework-tutorial-statechart.html
 (Traditional Chinese) http://zen747.blogspot.tw/2017/07/scm-framework.html
 
-
+```
