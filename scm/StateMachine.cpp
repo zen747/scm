@@ -5,10 +5,10 @@
 #include <iostream>
 using namespace std;
 
-namespace SCM {
+namespace scm {
 
 namespace {
-    struct StateTimerEventTypeCmpP
+    struct StateTimedEventTypeCmpP
     {
         bool operator () (TimedEventType *lhs, TimedEventType *rhs) const
         {
@@ -98,15 +98,13 @@ void StateMachine::addState (State *state)
     if (!state) return;
     string uid = state->state_uid();    
     states_map_[uid] = state;
-    //cout << "addState " << state->state_uid() << endl;
 }
 
 void StateMachine::removeState (State *state)
 {
     assert (state && "remove state error!");
-    if (!state) return;
+    if (!state || state == this) return;
     if (states_map_[state->state_uid()] == state) states_map_.erase(state->state_uid());
-    //cout << "removeState " << state->state_uid() << endl;
 }
 
 bool StateMachine::inState (std::string const &state_uid) const
@@ -142,6 +140,7 @@ void StateMachine::pumpQueuedEvents ()
 void StateMachine::enqueEvent(string const&e)
 {
     private_->queued_events_.push_back (e);
+    manager_->addToActiveMach (this);
 }
 
 
@@ -264,7 +263,7 @@ void StateMachine::destroy_machine (bool do_exit_state)
     }
     private_->queued_events_.clear ();
     states_map_.clear();
-    clear_substates ();
+    machine_clear_substates ();
     clear_slots ();
     reset_history ();
 
@@ -361,7 +360,7 @@ void StateMachine::setFrameMoveSlot (std::string const&name, boost::function<voi
 TimedEventType * StateMachine::registerTimedEvent (float after_t, string const&event_e, bool extern_manage)
 {
     TimedEventType * p = new TimedEventType(after_t + total_elapsed_time_, event_e, extern_manage);
-    list <TimedEventType *>::iterator it = std::upper_bound (private_->timed_events_.begin (), private_->timed_events_.end (), p, StateTimerEventTypeCmpP());
+    list <TimedEventType *>::iterator it = std::upper_bound (private_->timed_events_.begin (), private_->timed_events_.end (), p, StateTimedEventTypeCmpP());
     private_->timed_events_.insert (it, p);
     return p;
 }

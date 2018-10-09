@@ -9,7 +9,7 @@
 #include "RefCountObject.h"
 #include "FrameMover.h"
 
-namespace SCM {
+namespace scm {
 
 class StateMachine;
 
@@ -97,7 +97,7 @@ public:
 
     virtual ~State ();
 
-    void clear_substates ();
+    void machine_clear_substates ();
 
     void set_state_id (std::string const&id);
     

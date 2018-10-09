@@ -1,7 +1,7 @@
 #ifndef SCM_UNCOPYABLE_H
 #define SCM_UNCOPYABLE_H
 
-namespace SCM {
+namespace scm {
     
 class Uncopyable
 {

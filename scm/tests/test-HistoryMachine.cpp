@@ -4,7 +4,9 @@
 #include <iostream>
 
 using namespace std;
-using namespace SCM;
+using namespace scm;
+
+#define USE_XML 1
 
 std::string watch_scxml = "\
    <scxml non-unique='on,off'> \
@@ -272,7 +274,7 @@ public:
             }
             cout << states[state_idx] << endl;
             mach_->setActionSlot ("onentry_" + states[state_idx], boost::bind (&TheMachine::onentry_report_state, this, false));
-            mach_->setActionSlot ("onexit_" + states[state_idx], boost::bind (&TheMachine::onexit_report_state, this));
+            mach_->setActionSlot ("onexit_" + states[state_idx], boost::bind (&TheMachine::onexit_report_state, this, states[state_idx]));
         }
         cout << endl;
         mach_->setActionSlot ("onentry_sec", boost::bind (&TheMachine::onentry_sec, this));
@@ -321,17 +323,17 @@ public:
     
     void onentry_report_state(bool with_time)
     {
-        ++sec_;
         cout << "enter state " << mach_->getEnterState()->state_uid();
         if (with_time) {
             cout << ". time " << hr_ << ":" << min_ << ":" << sec_;
         }
         cout << endl;
+        ++sec_;
     }
     
-    void onexit_report_state()
+    void onexit_report_state(std::string const&st)
     {
-        cout << "exit state " << mach_->getEnterState()->state_uid() << endl;
+        cout << "exit state " << st << endl;
     }
     
     void test ()
@@ -387,5 +389,8 @@ int main(int argc, char* argv[])
         TheMachine mach;
         mach.test ();
     }
+    StateMachineManager::instance()->pumpMachEvents();
+    StateMachineManager::instance()->release_instance();
+    AutoReleasePool::pumpPools();
     return 0;
 }

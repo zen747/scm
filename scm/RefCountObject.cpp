@@ -2,10 +2,11 @@
 #include "RefCountObject.h"
 #include <cassert>
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
-namespace SCM {
+namespace scm {
 
 RefCountObject::RefCountObject ()
     :ref_count_(1)

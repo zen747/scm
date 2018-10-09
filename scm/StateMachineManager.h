@@ -4,7 +4,7 @@
 #include "StateMachine.h"
 #include "uncopyable.h"
 
-namespace SCM {
+namespace scm {
 
 class StateMachineManager: public Uncopyable
 {
@@ -34,6 +34,9 @@ public:
     size_t             num_of_states (const std::string& scxml_id) const;
     bool is_unique_id (const std::string& scxml_id, std::string const&state_uid) const;
     const std::vector<std::string> & get_all_states (const std::string& scxml_id) const;
+    
+    void addToActiveMach(StateMachine* mach);
+    void pumpMachEvents ();
     
 private:
     struct PRIVATE;

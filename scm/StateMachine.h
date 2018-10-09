@@ -10,7 +10,7 @@
 #include <deque>
 #include <set>
 
-namespace SCM {
+namespace scm {
 
 class StateMachineManager;
 

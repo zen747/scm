@@ -3,7 +3,7 @@
 
 using namespace std;
 
-namespace SCM {
+namespace scm {
 
 double  FrameMover::system_move_time_;
 
@@ -81,20 +81,18 @@ struct TimedActionTypeCompare
         return lhs->time_ < rhs->time_;
     }
 };
-}
 
-void PunctualFrameMover::addTimedAct (TimedActionType *act)
-{
-    act->retain ();
-    list <TimedActionType *>::iterator it = std::upper_bound (timed_acts_.begin (), timed_acts_.end (), act, TimedActionTypeCompare ());
-    timed_acts_.insert (it, act);
+std::list <TimedActionType *>   timed_acts_;
+
 }
 
 TimedActionType * PunctualFrameMover::registerTimedAction (float after_t, boost::function<void()> act, bool external_manage)
 {
     TimedActionType * p = new TimedActionType (after_t + system_move_time_, act, external_manage);
-    addTimedAct (p);
-    p->release ();
+
+    list <TimedActionType *>::iterator it = std::upper_bound (timed_acts_.begin (), timed_acts_.end (), p, TimedActionTypeCompare ());
+    timed_acts_.insert (it, p);
+
     return p;
 }
 

@@ -10,7 +10,7 @@
 
 using namespace std;
 
-namespace SCM {
+namespace scm {
 
 const string done_state_prefix = "done.state.";
 extern size_t splitStringToVector (std::string const &valstr, std::vector<std::string> &val, size_t max_s=0xffffffff, std::string const&separators=", \t");
@@ -55,11 +55,9 @@ State::State (std::string const& state_id, State* parent, StateMachine *machine)
 
 State::~State ()
 {
-    machine_->removeState (this);
+    if (machine_) machine_->removeState (this);
     this->transitions_.clear ();
     this->no_event_transitions_.clear ();
-    clear_substates ();
-
     delete private_;
 }
 
@@ -123,18 +121,21 @@ void State::clone_data (State *rhs)
     is_unique_state_id_ = rhs->is_unique_state_id_;
 }
 
-void State::clear_substates ()
+void State::machine_clear_substates ()
 {
     for (size_t i=0; i < substates_.size (); ++i) {
-        substates_[i]->clear_substates ();
+        substates_[i]->machine_clear_substates ();
         substates_[i]->release();
     }
 
+    machine_ = 0;
     substates_.clear ();
 }
 
 void  State::reset_history ()
 {
+    if (!machine_) return;
+    
     if (!machine_->with_history_) return;
 
     if (!machine_->history_type(this->state_uid()).empty()) {

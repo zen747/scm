@@ -6,7 +6,7 @@
 using std::string;
 using std::vector;
 
-namespace SCM {
+namespace scm {
 
 const string done_state_prefix = "done.state.";
 

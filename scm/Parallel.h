@@ -3,7 +3,7 @@
 
 #include "State.h"
 
-namespace SCM {
+namespace scm {
 
 /** Parallel state
 * 以 scxml 為基礎。請參考 https://www.w3.org/TR/scxml/

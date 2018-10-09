@@ -2,7 +2,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace SCM;
+using namespace scm;
 
 std::string cm_scxml = "\
    <scxml> \
@@ -274,6 +274,9 @@ int main(int argc, char* argv[])
         mach.init ();
         mach.test ();
     }
+    StateMachineManager::instance()->pumpMachEvents();
+    StateMachineManager::instance()->release_instance();
+    AutoReleasePool::pumpPools();
     
     return 0;
 }

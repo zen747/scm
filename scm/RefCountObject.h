@@ -1,7 +1,7 @@
 ﻿#ifndef RefCountObject_H
 #define RefCountObject_H
 
-namespace SCM {
+namespace scm {
 /** RefcountObject
  * 關於如何使用retain(), release(), autrelease(), 請參考Apple的Objective-C文件。
  * Please refer to Apple's Objective-C document for how to use retain(), release(), and autorelease().

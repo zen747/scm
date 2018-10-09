@@ -7,7 +7,7 @@
 #include <boost/signals2.hpp>
 
 
-namespace SCM {
+namespace scm {
 
 
 class FrameMover: virtual public RefCountObject
@@ -82,25 +82,21 @@ struct TimedActionType: public RefCountObject
 };
 
 class PunctualFrameMover: public FrameMover
-{
-protected:
-    std::list <TimedActionType *>   timed_acts_;
-
-protected:
-
-    void addTimedAct (TimedActionType *act);
-    
+{    
 public:
     /** 在 after_t 秒後，執行動作 act。 如果external_manage為真，reference count > 1才執行動作。
      * execute action act after after_t seconds, if external_manage is true, only perform action if reference count > 1.
      */
-    TimedActionType * registerTimedAction (float after_t, boost::function<void()> act, bool external_manage=false);
+    static TimedActionType * registerTimedAction (float after_t, boost::function<void()> act, bool external_manage=false);
 
     /** 清除所有未執行動作 
      * clear all timed actions
      */
-    void clearTimedActions ();
-    void pumpTimers (double t);
+    static void clearTimedActions ();
+    /**
+     * move 
+     */
+    static void pumpTimers (double t);
 };
 
 }
