@@ -11,7 +11,7 @@ Just read this simple example.
 #include <iostream>
 
 using namespace std;
-using namespace SCM;
+using namespace scm;
 
 std::string client_scxml = "\
    <scxml> \
@@ -126,8 +126,13 @@ int main(int argc, char* argv[])
         Life life;
         life.test ();
     }
+    StateMachineManager::instance()->pumpMachEvents();
+    StateMachineManager::instance()->release_instance();
+    AutoReleasePool::pumpPools();
     return 0;
 }
+
+
 
 Build this and run it, you should see:
 """
