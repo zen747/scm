@@ -62,11 +62,11 @@ struct TimedActionType: public RefCountObject
     typedef boost::signals2::signal<void()> signal_t;
     double                             time_;
     signal_t                           signal_;
-    bool                               extern_manage_;
+    bool                               extern_depend_;
     boost::signals2::scoped_connection conn_;
 
     TimedActionType (double time, boost::function<void()> slot, bool self_manage)
-        :time_(time), extern_manage_(self_manage)
+        :time_(time), extern_depend_(self_manage)
     {
         conn_ = signal_.connect (slot);
     }
@@ -83,11 +83,16 @@ struct TimedActionType: public RefCountObject
 
 class PunctualFrameMover: public FrameMover
 {    
+	/** 在 after_t 秒後，執行動作 act。 如果extern_depend為真，reference count > 1才執行動作。
+	* execute action act after after_t seconds, if extern_depend is true, only perform action if reference count > 1.
+	*/
+	static TimedActionType * PunctualFrameMover::registerTimedAction(float after_t, boost::function<void()> act, bool extern_depend);
+
 public:
-    /** 在 after_t 秒後，執行動作 act。 如果external_manage為真，reference count > 1才執行動作。
-     * execute action act after after_t seconds, if external_manage is true, only perform action if reference count > 1.
-     */
-    static TimedActionType * registerTimedAction (float after_t, boost::function<void()> act, bool external_manage=false);
+	// void return
+	static void registerTimedActionVR(float after_t, boost::function<void()> act);
+	// require return
+	static TimedActionType * registerTimedActionRR(float after_t, boost::function<void()> act);
 
     /** 清除所有未執行動作 
      * clear all timed actions

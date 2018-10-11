@@ -86,14 +86,24 @@ std::list <TimedActionType *>   timed_acts_;
 
 }
 
-TimedActionType * PunctualFrameMover::registerTimedAction (float after_t, boost::function<void()> act, bool external_manage)
+TimedActionType * PunctualFrameMover::registerTimedAction (float after_t, boost::function<void()> act, bool extern_depend)
 {
-    TimedActionType * p = new TimedActionType (after_t + system_move_time_, act, external_manage);
+    TimedActionType * p = new TimedActionType (after_t + system_move_time_, act, extern_depend);
 
     list <TimedActionType *>::iterator it = std::upper_bound (timed_acts_.begin (), timed_acts_.end (), p, TimedActionTypeCompare ());
     timed_acts_.insert (it, p);
 
     return p;
+}
+
+void PunctualFrameMover::registerTimedActionVR(float after_t, boost::function<void()> act)
+{
+	registerTimedAction(after_t, act, false);
+}
+
+TimedActionType * PunctualFrameMover::registerTimedActionRR(float after_t, boost::function<void()> act)
+{
+	return registerTimedAction(after_t, act, true);
 }
 
 void PunctualFrameMover::clearTimedActions ()
@@ -116,7 +126,7 @@ void PunctualFrameMover::pumpTimers (double t)
         list <TimedActionType *>::iterator it = timed_acts_.begin ();
         for (; it != timed_acts_.end () ;) {
             if ((*it)->time_ <= system_move_time_) {
-                if (!(*it)->extern_manage_ || !(*it)->unique_ref ()) {
+                if (!(*it)->extern_depend_ || !(*it)->unique_ref ()) {
                     (*it)->signal_ ();
                 }
                 (*it)->release ();

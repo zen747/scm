@@ -18,10 +18,10 @@ struct TimedEventType: public RefCountObject
 {
     double      time_;
     std::string event_;
-    bool        extern_manage_;
+    bool        extern_depend_;
 
-    TimedEventType (double time, std::string const&str, bool extern_manage)
-        :time_(time), event_(str), extern_manage_(extern_manage)
+    TimedEventType (double time, std::string const&str, bool extern_depend)
+        :time_(time), event_(str), extern_depend_(extern_depend)
     {}
 
     bool operator< (TimedEventType const&rhs) const
@@ -92,6 +92,9 @@ protected:
 
     StateMachine (StateMachineManager *manager);
     
+	/** \brief after t seconds, enqueEvent event_e. */
+	TimedEventType * registerTimedEvent(float after_t, std::string const&event_e, bool extern_depend);
+
 public:
 
     virtual ~StateMachine ();
@@ -177,9 +180,9 @@ public:
         allow_nop_entry_exit_slot_ = yes;
     }
 
-    /** \brief after t seconds, enqueEvent event_e. */
-    TimedEventType * registerTimedEvent (float after_t, std::string const&event_e, bool extern_manage);    
-    void clearTimedEvents ();
+	void registerTimedEventVR(float after_t, std::string const&event_e) { registerTimedEvent(after_t, event_e, false); }
+	TimedEventType * registerTimedEventRR(float after_t, std::string const&event_e) { registerTimedEvent(after_t, event_e, true); }
+	void clearTimedEvents ();
     void pumpTimedEvents ();
 
     std::string const& state_id_of_history (std::string const&history_id) const;
