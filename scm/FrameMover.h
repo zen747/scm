@@ -62,11 +62,11 @@ struct TimedActionType: public RefCountObject
     typedef boost::signals2::signal<void()> signal_t;
     double                             time_;
     signal_t                           signal_;
-    bool                               extern_depend_;
+    bool                               cancelable_;
     boost::signals2::scoped_connection conn_;
 
-    TimedActionType (double time, boost::function<void()> slot, bool self_manage)
-        :time_(time), extern_depend_(self_manage)
+    TimedActionType (double time, boost::function<void()> slot, bool cancelable)
+        :time_(time), cancelable_(cancelable)
     {
         conn_ = signal_.connect (slot);
     }
@@ -83,16 +83,16 @@ struct TimedActionType: public RefCountObject
 
 class PunctualFrameMover: public FrameMover
 {    
-	/** 在 after_t 秒後，執行動作 act。 如果extern_depend為真，reference count > 1才執行動作。
-	* execute action act after after_t seconds, if extern_depend is true, only perform action if reference count > 1.
+	/** 在 after_t 秒後，執行動作 act。 如果cancelable為真，reference count > 1才執行動作。
+	* execute action act after after_t seconds, if cancelable is true, only perform action if reference count > 1.
 	*/
-	static TimedActionType * PunctualFrameMover::registerTimedAction(float after_t, boost::function<void()> act, bool extern_depend);
+	static TimedActionType * registerTimedAction(float after_t, boost::function<void()> act, bool cancelable);
 
 public:
 	// void return
-	static void registerTimedActionVR(float after_t, boost::function<void()> act);
-	// require return
-	static TimedActionType * registerTimedActionRR(float after_t, boost::function<void()> act);
+	static void registerTimedAction(float after_t, boost::function<void()> act) { registerTimedAction(after_t, act, false); }
+	// return reference counted object
+	static TimedActionType * registerTimedAction_cancelable(float after_t, boost::function<void()> act) { return registerTimedAction(after_t, act, true); }
 
     /** 清除所有未執行動作 
      * clear all timed actions

@@ -357,9 +357,9 @@ void StateMachine::setFrameMoveSlot (std::string const&name, boost::function<voi
     (*frame_move_slots_)[name] = s;
 }
 
-TimedEventType * StateMachine::registerTimedEvent (float after_t, string const&event_e, bool extern_depend)
+TimedEventType * StateMachine::registerTimedEvent (float after_t, string const&event_e, bool cancelable)
 {
-    TimedEventType * p = new TimedEventType(after_t + total_elapsed_time_, event_e, extern_depend);
+    TimedEventType * p = new TimedEventType(after_t + total_elapsed_time_, event_e, cancelable);
     list <TimedEventType *>::iterator it = std::upper_bound (private_->timed_events_.begin (), private_->timed_events_.end (), p, StateTimedEventTypeCmpP());
     private_->timed_events_.insert (it, p);
     return p;
@@ -381,7 +381,7 @@ void StateMachine::pumpTimedEvents ()
         list <TimedEventType *>::iterator it = private_->timed_events_.begin ();
         for (; it != private_->timed_events_.end () ;) {
             if ((*it)->time_ <= this->total_elapsed_time_) {
-                if (!(*it)->extern_depend_ || !(*it)->unique_ref ()) {
+                if (!(*it)->cancelable_ || !(*it)->unique_ref ()) {
                     machine_->enqueEvent ((*it)->event_);
                 }
                 (*it)->release ();

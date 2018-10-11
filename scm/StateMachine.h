@@ -18,10 +18,10 @@ struct TimedEventType: public RefCountObject
 {
     double      time_;
     std::string event_;
-    bool        extern_depend_;
+    bool        cancelable_;
 
-    TimedEventType (double time, std::string const&str, bool extern_depend)
-        :time_(time), event_(str), extern_depend_(extern_depend)
+    TimedEventType (double time, std::string const&str, bool cancelable)
+        :time_(time), event_(str), cancelable_(cancelable)
     {}
 
     bool operator< (TimedEventType const&rhs) const
@@ -93,7 +93,7 @@ protected:
     StateMachine (StateMachineManager *manager);
     
 	/** \brief after t seconds, enqueEvent event_e. */
-	TimedEventType * registerTimedEvent(float after_t, std::string const&event_e, bool extern_depend);
+	TimedEventType * registerTimedEvent(float after_t, std::string const&event_e, bool cancelable);
 
 public:
 
@@ -180,8 +180,8 @@ public:
         allow_nop_entry_exit_slot_ = yes;
     }
 
-	void registerTimedEventVR(float after_t, std::string const&event_e) { registerTimedEvent(after_t, event_e, false); }
-	TimedEventType * registerTimedEventRR(float after_t, std::string const&event_e) { registerTimedEvent(after_t, event_e, true); }
+	void registerTimedEvent(float after_t, std::string const&event_e) { registerTimedEvent(after_t, event_e, false); }
+	TimedEventType * registerTimedEvent_cancelable(float after_t, std::string const&event_e) { registerTimedEvent(after_t, event_e, true); }
 	void clearTimedEvents ();
     void pumpTimedEvents ();
 
