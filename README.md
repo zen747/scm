@@ -5,6 +5,7 @@ You won't find another one as easy and flexible to use as SCM.
 
 Just read this simple example.
 
+
 #include <scm/StateMachineManager.h>
 #include <scm/uncopyable.h>
 
