@@ -407,10 +407,8 @@ void State::changeState (Transition const &transition)
             parentstate = parentstate->parent_;
         }
     }
-    while (!vps.empty()) {
-        lcaState->doEnterState (vps);
-    }
-        
+
+    lcaState->doEnterState (vps);
     lcaState->makeSureEnterStates();
 }
 

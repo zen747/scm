@@ -143,7 +143,7 @@ protected:
     void onentry_releasing ()
     {
         cout << "onentry_releasing" << endl;
-        //WorkerManager::instance()->perform_work_after(1.0, boost::bind(&TheCandyMachine::candy_released, this), false);
+        //PunctualFrameMover::registerTimedAction(1.0, boost::bind(&TheCandyMachine::candy_released, this));
         candy_released ();
     }
     
