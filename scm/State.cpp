@@ -625,13 +625,11 @@ void State::PRIVATE::connect_transitions_signal(vector< boost::shared_ptr< Trans
     for (size_t i=0; i < transitions.size (); ++i) {
         if (!transitions[i]->attr_->ontransit_.empty ()) {
             string const&tr = transitions[i]->attr_->ontransit_;
-            if (!tr.empty ()) {
-                boost::function<void()> s;
-                if (self_->machine_->GetActionSlot (tr, s)) {
-                    transitions[i]->signal_transit.connect (s);
-                } else {
-                    assert (0 && "can't connect on_transit slot");
-                }
+            boost::function<void()> s;
+            if (self_->machine_->GetActionSlot (tr, s)) {
+                transitions[i]->signal_transit.connect (s);
+            } else {
+                assert (0 && "can't connect on_transit slot");
             }
         }
     }

@@ -122,14 +122,11 @@ size_t splitStringToVector (string const &valstr, vector<string> &val, size_t ma
 namespace {
     struct ParseStruct {
         State        *current_state_;
-        StateMachine *machine;
-        bool          bEnterInitial;
-        string        newInitialState;
+        StateMachine *machine_;
         string        scxml_id_;
-        string        state_id_;
 
         ParseStruct ()
-            :current_state_(0), machine(0), bEnterInitial(false)
+            :current_state_(0), machine_(0)
         {}
     };
 }
@@ -141,15 +138,15 @@ struct StateMachineManager::PRIVATE
     std::list<StateMachine *> active_machs_;
     
     // ids are unique
-    map <string, StateMachine *>              mach_map_;
+    map <string, StateMachine *>       mach_map_;
     map <string, map<string, string> > onentry_action_map_;
     map <string, map<string, string> > onexit_action_map_;
     map <string, map<string, string> > frame_move_action_map_;
     map <string, map<string, string> > initial_state_map_;
     map <string, map<string, string> > history_type_map_;
     map <string, map<string, string> > history_id_reside_state_;
-    map <string, set<string> >      non_unique_ids_;
-    map <string, vector<string> >   state_uids_;
+    map <string, set<string> >         non_unique_ids_;
+    map <string, vector<string> >      state_uids_;
     map <string, map<string, vector<TransitionAttr *> > > transition_attr_map_;
 
     map<string, string> scxml_map_;
@@ -204,7 +201,7 @@ namespace {
 
 void StateMachineManager::PRIVATE::parse_element(ParseStruct &data, ptree &pt, int level)
 {    
-    StateMachineManager *manager = data.machine->manager();
+    StateMachineManager *manager = data.machine_->manager();
     ptree::iterator end = pt.end();
     for (ptree::iterator pt_it = pt.begin(); pt_it != end; ++pt_it) {
         if (pt_it->first == "<xmlattr>") {
@@ -218,7 +215,7 @@ void StateMachineManager::PRIVATE::parse_element(ParseStruct &data, ptree &pt, i
                 if (pt_it->first == "non-unique") {
                     vector<string> non_unique_ids;
                     splitStringToVector(pt_it->second.data(), non_unique_ids);
-                    data.machine->manager()->private_->non_unique_ids_[data.scxml_id_].insert(non_unique_ids.begin(), non_unique_ids.end());
+                    data.machine_->manager()->private_->non_unique_ids_[data.scxml_id_].insert(non_unique_ids.begin(), non_unique_ids.end());
                 } else {
                     //
                 }
@@ -236,7 +233,7 @@ void StateMachineManager::PRIVATE::parse_element(ParseStruct &data, ptree &pt, i
                     string stateid = attrs_map["id"];
                 //    cout << "id -> " << stateid << endl;
                     validate_state_id (stateid);
-                    State *state = new State(stateid, data.current_state_, data.machine);
+                    State *state = new State(stateid, data.current_state_, data.machine_);
                     if (data.current_state_) data.current_state_->substates_.push_back (state);
                     data.current_state_ = state;
                     manager->private_->state_uids_[data.scxml_id_].push_back(state->state_uid());
@@ -245,7 +242,7 @@ void StateMachineManager::PRIVATE::parse_element(ParseStruct &data, ptree &pt, i
                     string stateid = attrs_map["id"];
                //     cout << "id -> " << stateid << endl;
                     validate_state_id (stateid);
-                    Parallel *state = new Parallel(stateid, data.current_state_, data.machine);
+                    Parallel *state = new Parallel(stateid, data.current_state_, data.machine_);
                     if (data.current_state_) data.current_state_->substates_.push_back (state);
                     data.current_state_ = state;
                     manager->private_->state_uids_[data.scxml_id_].push_back(state->state_uid());
@@ -254,7 +251,7 @@ void StateMachineManager::PRIVATE::parse_element(ParseStruct &data, ptree &pt, i
                     string stateid = attrs_map["id"];
                //     cout << "id -> " << stateid << endl;
                     validate_state_id (stateid);
-                    State *state = new State(stateid, data.current_state_, data.machine);
+                    State *state = new State(stateid, data.current_state_, data.machine_);
                     if (data.current_state_) data.current_state_->substates_.push_back (state);
                     data.current_state_ = state;
                     manager->private_->state_uids_[data.scxml_id_].push_back(state->state_uid());
@@ -284,36 +281,33 @@ void StateMachineManager::PRIVATE::parse_element(ParseStruct &data, ptree &pt, i
 
 void StateMachineManager::PRIVATE::finish_scxml(ParseStruct& data, map<string, string> &attributes)
 {
-    StateMachineManager *manager = data.machine->manager();
+    StateMachineManager *manager = data.machine_->manager();
     
-    map<string,string>::iterator attr_it_end = attributes.end();
-    map<string,string>::iterator attr_it = attributes.begin();
-    for (; attr_it != attr_it_end; ++attr_it) {
-        if (attr_it->first == "initial") {
-            manager->private_->initial_state_map_[data.scxml_id_][data.current_state_->state_uid()] = attr_it->second;
-        }
+    map<string,string>::iterator it = attributes.find("initial");
+    if (it != attributes.end()) {
+        manager->private_->initial_state_map_[data.scxml_id_][data.current_state_->state_uid()] = it->second;
     }
     
     map<string, vector<TransitionAttr *> > &transition_map = manager->private_->transition_attr_map_[data.scxml_id_];
     map<string, vector<TransitionAttr *> > ::iterator tran_attr_it = transition_map.begin ();
     for (; tran_attr_it != transition_map.end (); ++tran_attr_it) {
         string const &state_uid = tran_attr_it->first;
-        State *st = data.machine->getState(state_uid);
+        State *st = data.machine_->getState(state_uid);
 
         for (size_t i=0; i < tran_attr_it->second.size (); ++i) {
             string &target_str = tran_attr_it->second[i]->transition_target_;
-            if (target_str.find(',') == string::npos && data.machine->is_unique_id(target_str)) continue;
+            if (target_str.find(',') == string::npos && data.machine_->is_unique_id(target_str)) continue;
             // support multiple targets
             vector<string> targets;
             vector<State*> tstates;
             splitStringToVector(target_str, targets);
             for (size_t i=0; i < targets.size(); ++i) {
-                if (!data.machine->is_unique_id(targets[i])) {
+                if (!data.machine_->is_unique_id(targets[i])) {
                     State *s = st->findState(targets[i]);
                     assert (s && "can't find transition target, not state id?");
                     targets[i] = s->state_uid();
                 }
-                tstates.push_back(data.machine->getState(targets[i]));
+                tstates.push_back(data.machine_->getState(targets[i]));
             }
             target_str = targets[0];
             for (size_t i=1; i < targets.size(); ++i) {
@@ -332,7 +326,7 @@ void StateMachineManager::PRIVATE::finish_scxml(ParseStruct& data, map<string, s
 
 void StateMachineManager::PRIVATE::handle_state_item(ParseStruct& data, map<string, string> &attributes)
 {
-    StateMachineManager *manager = data.machine->manager();
+    StateMachineManager *manager = data.machine_->manager();
     
     string stateid;
     string onentry;
@@ -375,7 +369,7 @@ void StateMachineManager::PRIVATE::handle_state_item(ParseStruct& data, map<stri
     }
 
     if (!manager->private_->history_type_map_[data.scxml_id_][state_uid].empty ()) {
-        data.machine->with_history_ = true;
+        data.machine_->with_history_ = true;
     }
 
     manager->private_->onentry_action_map_[data.scxml_id_][state_uid] = onentry;
@@ -386,7 +380,7 @@ void StateMachineManager::PRIVATE::handle_state_item(ParseStruct& data, map<stri
 
 void StateMachineManager::PRIVATE::handle_parallel_item(ParseStruct& data, map<string, string> &attributes)
 {
-    StateMachineManager *manager = data.machine->manager();
+    StateMachineManager *manager = data.machine_->manager();
     
     string stateid;
     string history_type;
@@ -427,7 +421,7 @@ void StateMachineManager::PRIVATE::handle_parallel_item(ParseStruct& data, map<s
     }
 
     if (!manager->private_->history_type_map_[data.scxml_id_][state_uid].empty ()) {
-        data.machine->with_history_ = true;
+        data.machine_->with_history_ = true;
     }
 
     manager->private_->onentry_action_map_[data.scxml_id_][state_uid] = onentry;
@@ -438,7 +432,7 @@ void StateMachineManager::PRIVATE::handle_parallel_item(ParseStruct& data, map<s
 
 void StateMachineManager::PRIVATE::handle_final_item(ParseStruct& data, map<string, string> &attributes)
 {
-    StateMachineManager *manager = data.machine->manager();
+    StateMachineManager *manager = data.machine_->manager();
     
     string stateid;
     string onentry;
@@ -466,7 +460,7 @@ void StateMachineManager::PRIVATE::handle_final_item(ParseStruct& data, map<stri
 
 void StateMachineManager::PRIVATE::handle_transition_item(ParseStruct& data, map<string, string> &attributes)
 {
-    StateMachineManager *manager = data.machine->manager();
+    StateMachineManager *manager = data.machine_->manager();
     
     TransitionAttr * tran = new TransitionAttr ("","");
 
@@ -499,7 +493,7 @@ void StateMachineManager::PRIVATE::handle_transition_item(ParseStruct& data, map
 
 void StateMachineManager::PRIVATE::handle_history_item(ParseStruct& data, map<string, string> &attributes)
 {
-    StateMachineManager *manager = data.machine->manager();
+    StateMachineManager *manager = data.machine_->manager();
     
     const string &state_uid = data.current_state_->state_uid();
     
@@ -682,7 +676,7 @@ bool StateMachineManager::loadMachFromString(StateMachine* mach, const string& s
 {
     ParseStruct parse;
     parse.scxml_id_ = mach->scxml_id ();
-    parse.machine = mach;
+    parse.machine_ = mach;
     parse.current_state_ = mach;
     private_->transition_attr_map_[parse.scxml_id_].clear();
 
