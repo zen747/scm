@@ -324,9 +324,9 @@ public:
     void onentry_report_state(bool with_time)
     {
         cout << "enter state " << mach_->getEnterState()->state_uid();
-        if (with_time) {
+        //if (with_time) {
             cout << ". time " << hr_ << ":" << min_ << ":" << sec_;
-        }
+        //}
         cout << endl;
         ++sec_;
     }

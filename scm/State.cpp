@@ -323,8 +323,8 @@ void State::changeState (Transition const &transition)
 
     if (!private_->leaving_target_transition_) {
         if (private_->leaving_delay_ != 0) {
-            private_->leaving_target_transition_ = new Transition;
             TransitionAttr *attr = new TransitionAttr (transition.attr_->event_, target);
+            private_->leaving_target_transition_ = new Transition(attr);
             private_->leaving_target_transition_->setAttr (attr);
             attr->release ();
             if (!transition.attr_->ontransit_.empty ()) {
@@ -437,9 +437,8 @@ void State::doEnterSubState()
                 this->current_state_ = this->substates_.front ();
                 this->current_state_->enterState ();
             } else {
-                Transition tran;
                 TransitionAttr *attr = new TransitionAttr ("", initial_state);
-                tran.setAttr (attr);
+                Transition tran(attr);
                 attr->release ();
                 this->changeState (tran);
             }
@@ -517,13 +516,11 @@ void State::prepareActionCondSlots ()
     transitions_.reserve(size);
     no_event_transitions_.reserve(size);
     for (size_t i=0; i < tran_attrs.size(); ++i) {
-        boost::shared_ptr<Transition> ptr (new Transition);
+        boost::shared_ptr<Transition> ptr (new Transition(tran_attrs[i]));
         if (tran_attrs[i]->event_.empty()) {
             no_event_transitions_.push_back (ptr);
-            no_event_transitions_.back()->setAttr (tran_attrs[i]);
         } else {
             transitions_.push_back (ptr);
-            transitions_.back()->setAttr (tran_attrs[i]);
         }
     }
     std::vector<boost::shared_ptr<Transition> > (transitions_).swap(transitions_);

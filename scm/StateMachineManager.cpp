@@ -170,7 +170,6 @@ struct StateMachineManager::PRIVATE
     
     static void finish_scxml (ParseStruct &data, map<string, string> &attributes);
     static void handle_state_item (ParseStruct &data, map<string, string> &attributes);
-    static void handle_parallel_item (ParseStruct &data, map<string, string> &attributes);
     static void handle_final_item (ParseStruct &data, map<string, string> &attributes);
     static void handle_transition_item (ParseStruct &data, map<string, string> &attributes);
     static void handle_history_item (ParseStruct &data, map<string, string> &attributes);
@@ -202,6 +201,8 @@ namespace {
 void StateMachineManager::PRIVATE::parse_element(ParseStruct &data, ptree &pt, int level)
 {    
     StateMachineManager *manager = data.machine_->manager();
+    const string &scxml_id = data.scxml_id_;
+
     ptree::iterator end = pt.end();
     for (ptree::iterator pt_it = pt.begin(); pt_it != end; ++pt_it) {
         if (pt_it->first == "<xmlattr>") {
@@ -215,7 +216,7 @@ void StateMachineManager::PRIVATE::parse_element(ParseStruct &data, ptree &pt, i
                 if (pt_it->first == "non-unique") {
                     vector<string> non_unique_ids;
                     splitStringToVector(pt_it->second.data(), non_unique_ids);
-                    data.machine_->manager()->private_->non_unique_ids_[data.scxml_id_].insert(non_unique_ids.begin(), non_unique_ids.end());
+                    data.machine_->manager()->private_->non_unique_ids_[scxml_id].insert(non_unique_ids.begin(), non_unique_ids.end());
                 } else {
                     //
                 }
@@ -227,34 +228,34 @@ void StateMachineManager::PRIVATE::parse_element(ParseStruct &data, ptree &pt, i
                 get_item_attrs_in_ptree (pt_it->second, attrs_map);
                 
                 if (tag == "scxml") {
-                    manager->private_->state_uids_[data.scxml_id_].reserve(16);
-                    manager->private_->state_uids_[data.scxml_id_].push_back(data.scxml_id_);
+                    manager->private_->state_uids_[scxml_id].reserve(16);
+                    manager->private_->state_uids_[scxml_id].push_back(scxml_id);
                 } else if (tag == "state") {
                     string stateid = attrs_map["id"];
                 //    cout << "id -> " << stateid << endl;
                     validate_state_id (stateid);
                     State *state = new State(stateid, data.current_state_, data.machine_);
-                    if (data.current_state_) data.current_state_->substates_.push_back (state);
+                    data.current_state_->substates_.push_back (state);
                     data.current_state_ = state;
-                    manager->private_->state_uids_[data.scxml_id_].push_back(state->state_uid());
+                    manager->private_->state_uids_[scxml_id].push_back(state->state_uid());
                     handle_state_item(data, attrs_map);
                 } else if (tag == "parallel") {
                     string stateid = attrs_map["id"];
                //     cout << "id -> " << stateid << endl;
                     validate_state_id (stateid);
                     Parallel *state = new Parallel(stateid, data.current_state_, data.machine_);
-                    if (data.current_state_) data.current_state_->substates_.push_back (state);
+                    data.current_state_->substates_.push_back (state);
                     data.current_state_ = state;
-                    manager->private_->state_uids_[data.scxml_id_].push_back(state->state_uid());
-                    handle_parallel_item(data, attrs_map);
+                    manager->private_->state_uids_[scxml_id].push_back(state->state_uid());
+                    handle_state_item(data, attrs_map);
                 } else if (tag == "final") {
                     string stateid = attrs_map["id"];
                //     cout << "id -> " << stateid << endl;
                     validate_state_id (stateid);
                     State *state = new State(stateid, data.current_state_, data.machine_);
-                    if (data.current_state_) data.current_state_->substates_.push_back (state);
+                    data.current_state_->substates_.push_back (state);
                     data.current_state_ = state;
-                    manager->private_->state_uids_[data.scxml_id_].push_back(state->state_uid());
+                    manager->private_->state_uids_[scxml_id].push_back(state->state_uid());
                     handle_final_item(data, attrs_map);
                 } else if (tag == "history") {
                     handle_history_item(data, attrs_map);
@@ -282,13 +283,15 @@ void StateMachineManager::PRIVATE::parse_element(ParseStruct &data, ptree &pt, i
 void StateMachineManager::PRIVATE::finish_scxml(ParseStruct& data, map<string, string> &attributes)
 {
     StateMachineManager *manager = data.machine_->manager();
+    const string &scxml_id = data.scxml_id_;
     
     map<string,string>::iterator it = attributes.find("initial");
     if (it != attributes.end()) {
-        manager->private_->initial_state_map_[data.scxml_id_][data.current_state_->state_uid()] = it->second;
+        manager->private_->initial_state_map_[scxml_id][data.current_state_->state_uid()] = it->second;
     }
     
-    map<string, vector<TransitionAttr *> > &transition_map = manager->private_->transition_attr_map_[data.scxml_id_];
+    // check transition settings
+    map<string, vector<TransitionAttr *> > &transition_map = manager->private_->transition_attr_map_[scxml_id];
     map<string, vector<TransitionAttr *> > ::iterator tran_attr_it = transition_map.begin ();
     for (; tran_attr_it != transition_map.end (); ++tran_attr_it) {
         string const &state_uid = tran_attr_it->first;
@@ -327,8 +330,8 @@ void StateMachineManager::PRIVATE::finish_scxml(ParseStruct& data, map<string, s
 void StateMachineManager::PRIVATE::handle_state_item(ParseStruct& data, map<string, string> &attributes)
 {
     StateMachineManager *manager = data.machine_->manager();
+    const string &scxml_id = data.scxml_id_;
     
-    string stateid;
     string onentry;
     string onexit;
     string framemove;
@@ -338,7 +341,7 @@ void StateMachineManager::PRIVATE::handle_state_item(ParseStruct& data, map<stri
     map<string,string>::iterator attr_it = attributes.begin();
     for (; attr_it != attr_it_end; ++attr_it) {
         if (attr_it->first == "initial") {
-            manager->private_->initial_state_map_[data.scxml_id_][data.current_state_->state_uid()] = attr_it->second;
+            manager->private_->initial_state_map_[scxml_id][data.current_state_->state_uid()] = attr_it->second;
         } else if (attr_it->first == "history") {
             history_type = attr_it->second;
         } else if (attr_it->first == "onentry") {
@@ -362,79 +365,27 @@ void StateMachineManager::PRIVATE::handle_state_item(ParseStruct& data, map<stri
     
     if (framemove.empty ()) framemove = state_uid;
     
-    if (manager->private_->history_type_map_[data.scxml_id_][data.current_state_->parent_->state_uid()] == "deep") {
-        manager->private_->history_type_map_[data.scxml_id_][state_uid] = "deep";
+    if (manager->private_->history_type_map_[scxml_id][data.current_state_->parent_->state_uid()] == "deep") {
+        manager->private_->history_type_map_[scxml_id][state_uid] = "deep";
     } else {
-        manager->private_->history_type_map_[data.scxml_id_][state_uid] = history_type;
+        manager->private_->history_type_map_[scxml_id][state_uid] = history_type;
     }
 
-    if (!manager->private_->history_type_map_[data.scxml_id_][state_uid].empty ()) {
+    if (!manager->private_->history_type_map_[scxml_id][state_uid].empty ()) {
         data.machine_->with_history_ = true;
     }
 
-    manager->private_->onentry_action_map_[data.scxml_id_][state_uid] = onentry;
-    manager->private_->onexit_action_map_[data.scxml_id_][state_uid] = onexit;
-    manager->private_->frame_move_action_map_[data.scxml_id_][state_uid] = framemove;
+    manager->private_->onentry_action_map_[scxml_id][state_uid] = onentry;
+    manager->private_->onexit_action_map_[scxml_id][state_uid] = onexit;
+    manager->private_->frame_move_action_map_[scxml_id][state_uid] = framemove;
     
-}
-
-void StateMachineManager::PRIVATE::handle_parallel_item(ParseStruct& data, map<string, string> &attributes)
-{
-    StateMachineManager *manager = data.machine_->manager();
-    
-    string stateid;
-    string history_type;
-    string onentry;
-    string onexit;
-    string framemove;
-    float leaving_delay = 0;
-    map<string,string>::iterator attr_it_end = attributes.end();
-    map<string,string>::iterator attr_it = attributes.begin();
-    for (; attr_it != attr_it_end; ++attr_it) {
-        if (attr_it->first == "history") {
-            history_type = attr_it->second;
-        } else if (attr_it->first == "onentry") {
-            onentry = attr_it->second;
-        } else if (attr_it->first == "onexit") {
-            onexit = attr_it->second;
-        } else if (attr_it->first == "frame_move") {
-            framemove = attr_it->second;
-        } else if (attr_it->first == "leaving_delay") {
-            leaving_delay = strtod (attr_it->second.c_str(), NULL);
-        }
-    }
-
-    string state_uid = data.current_state_->state_uid();
-    
-    data.current_state_->setLeavingDelay (leaving_delay);
-
-    if (onentry.empty ()) onentry = "onentry_" + state_uid;
-    
-    if (onexit.empty ()) onexit = "onexit_" + state_uid;
-    
-    if (framemove.empty ()) framemove = state_uid;
-            
-    if (manager->private_->history_type_map_[data.scxml_id_][data.current_state_->parent_->state_uid()] == "deep") {
-        manager->private_->history_type_map_[data.scxml_id_][state_uid] = "deep";
-    } else {
-        manager->private_->history_type_map_[data.scxml_id_][state_uid] = history_type;
-    }
-
-    if (!manager->private_->history_type_map_[data.scxml_id_][state_uid].empty ()) {
-        data.machine_->with_history_ = true;
-    }
-
-    manager->private_->onentry_action_map_[data.scxml_id_][state_uid] = onentry;
-    manager->private_->onexit_action_map_[data.scxml_id_][state_uid] = onexit;
-    manager->private_->frame_move_action_map_[data.scxml_id_][state_uid] = framemove;
-
 }
 
 void StateMachineManager::PRIVATE::handle_final_item(ParseStruct& data, map<string, string> &attributes)
 {
     StateMachineManager *manager = data.machine_->manager();
+    const string &scxml_id = data.scxml_id_;
     
-    string stateid;
     string onentry;
     string framemove;
     map<string,string>::iterator attr_it_end = attributes.end();
@@ -452,8 +403,8 @@ void StateMachineManager::PRIVATE::handle_final_item(ParseStruct& data, map<stri
     if (onentry.empty ()) onentry = "onentry_" + state_uid;
     if (framemove.empty ()) framemove = state_uid;
 
-    manager->private_->onentry_action_map_[data.scxml_id_][state_uid] = onentry;
-    manager->private_->frame_move_action_map_[data.scxml_id_][state_uid] = framemove;
+    manager->private_->onentry_action_map_[scxml_id][state_uid] = onentry;
+    manager->private_->frame_move_action_map_[scxml_id][state_uid] = framemove;
     data.current_state_->is_a_final_ = true;
 
 }

@@ -35,9 +35,10 @@ struct Transition
     boost::function<bool()>  cond_functor_;
     boost::signals2::signal<void()> signal_transit;
 
-    Transition ()
-        : attr_(0)
+    Transition (TransitionAttr *attr)
+        : attr_(attr)
     {
+        attr->retain();
     }
 
 
