@@ -114,6 +114,11 @@ bool StateMachine::inState (std::string const &state_uid) const
     return it->second->active();
 }
 
+double StateMachine::elapsed_time_of_current_state() const
+{
+    return getEnterState()->total_elapsed_time();
+}
+
 void StateMachine::onFrameMove (float t)
 {
     if (!slots_connected_) return;

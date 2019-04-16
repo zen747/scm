@@ -125,6 +125,8 @@ public:
     void removeState (State *state);
     virtual bool inState (std::string const&state_uid) const;
     
+    double elapsed_time_of_current_state() const;
+    
     /** \brief 將 event e 加到 event queue 中等待處理. Add event_e to event queue.*/
     void enqueEvent(std::string const&e);
 

@@ -1,11 +1,12 @@
-``` {style="color:#1f1c1b;background-color:#ffffff;"}
+# scm
+
 This is a c++ library supporting statechart (in scxml format) originated by David Harel.
 Features like hierarchical states, parallel states, and history are ready for you to command.
 You won't find another one as easy and flexible to use as SCM.
 
 Just read this simple example.
 
-
+```
 #include <scm/StateMachineManager.h>
 #include <scm/uncopyable.h>
 
@@ -132,7 +133,7 @@ int main(int argc, char* argv[])
     AutoReleasePool::pumpPools();
     return 0;
 }
-
+```
 
 
 Build this and run it, you should see:
@@ -160,7 +161,8 @@ Done.
 It's that easy!
 
 Read the tutorials at
-(English) http://zen747.blogspot.tw/2017/07/a-scm-framework-tutorial-statechart.html
-(Traditional Chinese) http://zen747.blogspot.tw/2017/07/scm-framework.html
+[English](http://zen747.blogspot.tw/2017/07/a-scm-framework-tutorial-statechart.html)
+
+[Traditional Chinese](http://zen747.blogspot.tw/2017/07/scm-framework.html)
 
 ```
