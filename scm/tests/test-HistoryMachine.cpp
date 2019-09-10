@@ -362,6 +362,12 @@ public:
         mach_->enqueEvent("d");
         mach_->enqueEvent("a"); // -> stopwatch.zero
         mach_->enqueEvent("b"); // -> run.on
+        mach_->frame_move(0);
+        cout << "check point:" << endl; // should display 'run.on' and 'regular' because it's in parallel state.
+        vector<string> states = mach_->getCurrentStateUId();
+        for (size_t i=0; i < states.size(); ++i) {
+            cout << "in state " << states[i] << endl;
+        }
         mach_->enqueEvent("d"); // -> display.lap
         mach_->enqueEvent("a"); // -> time
         mach_->enqueEvent("d"); // no effect

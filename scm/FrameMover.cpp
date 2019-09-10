@@ -22,8 +22,8 @@ void FrameMover::frame_move (float elapsed_seconds)
 {
     if (pause_) return;
     assert (!frame_moving_ && "Error! recursive frame_move() called");
-    frame_moving_ = true;
     total_elapsed_time_ += elapsed_seconds;
+    frame_moving_ = true;
     signal_on_frame_move_(elapsed_seconds);
     this->onFrameMove (elapsed_seconds);
     frame_moving_ = false;

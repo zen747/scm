@@ -27,14 +27,6 @@ Parallel *Parallel::clone (State *parent, StateMachine *m)
     return pa;
 }
 
-void Parallel::makeSureEnterStates()
-{
-    this->enterState(true);
-    for (size_t i=0; i < this->substates_.size(); ++i) {
-        substates_[i]->makeSureEnterStates();
-    }   
-}
-
 
 void Parallel::onEvent (string const &e)
 {
@@ -90,7 +82,11 @@ void Parallel::enterState (bool enter_substate)
     active_ = true;
     this->reset_time ();
 
-    machine_->current_leaf_state_ = this;
+    machine_->current_enter_state_ = this;
+    if (substates_.empty()) {
+        machine_->leaf_states_.push_back(this);
+    }
+    
     signal_onentry ();
     if (this->parent_ && !this->parent_->inState (this, false)) {
         return;
@@ -105,19 +101,36 @@ void Parallel::enterState (bool enter_substate)
 
 void Parallel::doEnterState (std::vector<State *> &vps)
 {
-    State *state = vps.back ();
-    if (state->depth_ <= this->depth_) return;
-    
-    vps.pop_back ();
-    for (size_t i=0; i < this->substates_.size(); ++i) {
-        if (state == substates_[i]) {
-            state->enterState (false);
-            if (!vps.empty ()) {
-                state->doEnterState (vps);
+    while (!vps.empty()) {
+        State *state = vps.back ();
+
+        if (state->depth_ < this->depth_) return;
+        
+        if (state->depth_ == this->depth_) {
+            if (state == this) {
+                vps.pop_back();
+                continue;
+            } else {
+                return;
             }
+        }
+        
+        bool found = false;
+        vps.pop_back ();
+        for (size_t i=0; i < this->substates_.size(); ++i) {
+            if (state == substates_[i]) {
+                state->enterState (false);
+                if (!vps.empty ()) {
+                    state->doEnterState (vps);
+                }
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
             return;
         }
-    }   
+    }
 }
 
 void Parallel::exitState ()

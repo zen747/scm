@@ -1,4 +1,4 @@
-﻿#ifndef IFrameMover_H
+#ifndef IFrameMover_H
 #define IFrameMover_H
 
 #include "RefCountObject.h"
@@ -7,18 +7,19 @@
 #include <boost/signals2.hpp>
 
 
-namespace scm {
+namespace bs2 = boost::signals2;
 
+namespace scm {
 
 class FrameMover: virtual public RefCountObject
 {
 protected:
-    static double                       system_move_time_;
+    static double    system_move_time_;
 
 protected:
     double total_elapsed_time_;
     bool pause_;
-    bool frame_moving_;
+    bool frame_moving_; // for recursive frame_move() call check
 
 protected:
 
@@ -47,9 +48,9 @@ public:
     /** \brief reset total_elapsed_time to 0。*/
     virtual void reset_time ();
     
-    boost::signals2::signal<void(float)> signal_on_frame_move_;
-    boost::signals2::signal<void()> signal_on_pause_;
-    boost::signals2::signal<void()> signal_on_resume_;
+    bs2::signal<void(float)> signal_on_frame_move_;
+    bs2::signal<void()> signal_on_pause_;
+    bs2::signal<void()> signal_on_resume_;
 };
 
 /**
@@ -59,11 +60,11 @@ PunctualFrameMover let user specify actions in the future. Support by utilize si
 */
 struct TimedActionType: public RefCountObject
 {
-    typedef boost::signals2::signal<void()> signal_t;
+    typedef bs2::signal<void()> signal_t;
     double                             time_;
     signal_t                           signal_;
     bool                               cancelable_;
-    boost::signals2::scoped_connection conn_;
+    bs2::scoped_connection conn_;
 
     TimedActionType (double time, boost::function<void()> slot, bool cancelable)
         :time_(time), cancelable_(cancelable)
@@ -84,7 +85,8 @@ struct TimedActionType: public RefCountObject
 class PunctualFrameMover: public FrameMover
 {    
 	/** 在 after_t 秒後，執行動作 act。 如果cancelable為真，reference count > 1才執行動作。
-	* execute action act after after_t seconds, if cancelable is true, only perform action if reference count > 1.
+	* Execute act after after_t seconds, if cancelable is true, only perform action if reference count > 1.
+    * i.e, if cancelable is true, you must retain and release later the returned object.
 	*/
 	static TimedActionType * registerTimedAction(float after_t, boost::function<void()> act, bool cancelable);
 

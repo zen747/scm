@@ -33,7 +33,7 @@ struct Transition
 {
     TransitionAttr       *attr_;
     boost::function<bool()>  cond_functor_;
-    boost::signals2::signal<void()> signal_transit;
+    bs2::signal<void()> signal_transit;
 
     Transition (TransitionAttr *attr)
         : attr_(attr)
@@ -89,9 +89,9 @@ protected:
 
 public:
     // signals
-    boost::signals2::signal<void()>      signal_done;
-    boost::signals2::signal<void()>      signal_onentry;
-    boost::signals2::signal<void()>      signal_onexit;
+    bs2::signal<void()>      signal_done;
+    bs2::signal<void()>      signal_onentry;
+    bs2::signal<void()>      signal_onexit;
 
 public:
     State (std::string const& state_id, State* parent, StateMachine *machine);
@@ -143,7 +143,6 @@ public:
 
     virtual bool inState (std::string const& state_id, bool recursive=true) const;
     virtual bool inState (State const* state, bool recursive=true) const;    
-    virtual void makeSureEnterStates();
 
     friend class Parallel;
     friend class StateMachine;

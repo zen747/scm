@@ -175,7 +175,11 @@ void State::enterState (bool enter_substate)
     this->done_ = false;
     active_ = true;
 
-    machine_->current_leaf_state_ = this;
+    machine_->current_enter_state_ = this;
+    if (substates_.empty()) {
+        machine_->leaf_states_.push_back(this);
+    }
+
     signal_onentry ();
 
     if (!this->active_) { // in case state changed immediately at last signal_onentry.
@@ -382,6 +386,8 @@ void State::changeState (Transition const &transition)
         }
     }
 
+    machine_->leaf_states_.clear();
+    
     // exit old states
     if (newState.size() == 1 && lcaState == newState[0]) { // for reentering
         machine_->transition_source_state_ = lcaState->state_uid();
@@ -409,7 +415,6 @@ void State::changeState (Transition const &transition)
     }
 
     lcaState->doEnterState (vps);
-    lcaState->makeSureEnterStates();
 }
 
 void State::doEnterState (std::vector<State *> &vps)
@@ -419,7 +424,8 @@ void State::doEnterState (std::vector<State *> &vps)
     
     vps.pop_back ();
     this->current_state_ = state;
-    this->current_state_->enterState (false);
+    bool enter_subst= vps.empty () || vps.back()->depth_ <= current_state_->depth_;
+    this->current_state_->enterState (enter_subst);
     if (!vps.empty ()) {
         this->current_state_->doEnterState (vps);
     }
@@ -490,18 +496,6 @@ bool State::inState (State const*state, bool recursive) const
         return false;
     }
 }
-
-void State::makeSureEnterStates()
-{
-    this->enterState(true);
-    if (!current_state_ && !substates_.empty()) {
-        this->doEnterSubState();
-    }
-    if (current_state_) {
-        current_state_->makeSureEnterStates();
-    }
-}
-
 
 void State::prepareActionCondSlots ()
 {

@@ -17,7 +17,6 @@ public:
 
     virtual bool inState (std::string const& state_id, bool recursive=true) const;
     virtual bool inState (State const* state, bool recursive=true) const;
-    virtual void makeSureEnterStates();
 
     virtual Parallel *clone (State *parent, StateMachine *m);
 

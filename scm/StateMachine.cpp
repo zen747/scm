@@ -46,7 +46,7 @@ StateMachine::StateMachine (StateMachineManager *manager)
     , engine_started_(false)
     , on_event_(false)
     , with_history_(false)
-    , current_leaf_state_(0)
+    , current_enter_state_(0)
     , frame_move_slots_(0)
     , cond_slots_(0)
     , action_slots_(0)
@@ -83,6 +83,26 @@ bool StateMachine::is_unique_id(std::string const&state_id) const
 {
     return !manager_ || manager_->is_unique_id(scxml_id_, state_id);
 
+}
+
+std::vector<std::string> StateMachine::getCurrentStateId() const
+{
+    vector<string> stateids;
+    size_t lfsize = leaf_states_.size();
+    for (size_t i=0; i < lfsize; ++i) {
+        stateids.push_back(leaf_states_[i]->state_id());
+    }
+    return stateids;
+}
+
+std::vector<std::string> StateMachine::getCurrentStateUId() const
+{
+    vector<string> stateids;
+    size_t lfsize = leaf_states_.size();
+    for (size_t i=0; i < lfsize; ++i) {
+        stateids.push_back(leaf_states_[i]->state_uid());
+    }
+    return stateids;
 }
 
 State* StateMachine::getState(std::string const& state_uid) const

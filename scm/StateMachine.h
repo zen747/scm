@@ -1,4 +1,4 @@
-﻿#ifndef StateMachine_H
+#ifndef StateMachine_H
 #define StateMachine_H
 
 #include "State.h"
@@ -68,7 +68,8 @@ protected:
 
     std::map<std::string, State*> states_map_;
 
-    State *current_leaf_state_;
+    State *current_enter_state_;
+    std::vector<State *> leaf_states_;
 
     friend class State;
     friend class Parallel;
@@ -92,7 +93,7 @@ protected:
 
     StateMachine (StateMachineManager *manager);
     
-	/** \brief after t seconds, enqueEvent event_e. */
+	/** \brief after t seconds, enqueEvent event_e. If cancelable is true, you must retain and release later the returned object.*/
 	TimedEventType * registerTimedEvent(float after_t, std::string const&event_e, bool cancelable);
 
 public:
@@ -113,8 +114,16 @@ public:
     }
 
     State *getEnterState () const {
-        return current_leaf_state_;
+        return current_enter_state_;
     }
+    
+    const std::vector<State*> & getCurrentLeafStates() const {
+        return leaf_states_;
+    }
+    
+    std::vector<std::string> getCurrentStateId() const;
+    
+    std::vector<std::string> getCurrentStateUId() const;
     
     bool re_enter_state() const {
         return transition_source_state_ == transition_target_state_;
@@ -199,9 +208,9 @@ public:
     
 public:
     // signals
-    boost::signals2::signal<void ()>          signal_prepare_slots_;
-    boost::signals2::signal<void ()>          signal_connect_cond_slots_;
-    boost::signals2::signal<void ()>          signal_connect_action_slots_;
+    bs2::signal<void ()>          signal_prepare_slots_;
+    bs2::signal<void ()>          signal_connect_cond_slots_;
+    bs2::signal<void ()>          signal_connect_action_slots_;
     
 
 private:
