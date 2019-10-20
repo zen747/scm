@@ -20,7 +20,7 @@ struct TransitionAttr: public RefCountObject
     std::vector<std::string> random_target_;
     std::string              cond_; // for later connecting slot
     std::string              ontransit_; // for later connecting slot
-    std::string              in_state_; // for inState check if not empty
+    std::vector<std::string> in_state_; // for inState check if not empty. You can use '|' to specify multiple states, ex. "In(state1|state2)"
     bool                     not_; // to support "!In(state)"
 
     TransitionAttr (std::string const &e, std::string const &t)

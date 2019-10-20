@@ -154,7 +154,10 @@ bool State::trig_cond (Transition const &tran) const
         if (tran.attr_->not_) change = !change;
         return change;
     } else if (!tran.attr_->in_state_.empty ()) {
-        bool change = machine_->inState (tran.attr_->in_state_);
+        bool change = false;
+        for (size_t i=0; i < tran.attr_->in_state_.size(); ++i) {
+            change |= machine_->inState (tran.attr_->in_state_[i]);
+        }
         if (tran.attr_->not_) change = !change;
         return change;
     } else {
@@ -549,15 +552,30 @@ void State::PRIVATE::connect_transitions_conds(vector< boost::shared_ptr< Transi
             if (instate_check == "In(" || instate_check == "in(") {
                 string::size_type endmark = cond.find_first_of (')', 4);
                 string st = cond.substr (3, endmark - 3);
-                if (!self_->machine_->is_unique_id(st)) {
-                    State *s = self_->findState(st);
-                    if (!s) {
-                        assert (0 && "can't find state for In() check.");
-                        continue;
+                vector<string> state_list;
+                size_t len = st.length();
+                size_t start_pos = 0;
+                for (size_t si=0; si < len; ++si) {
+                    if (st[si] == '|') {
+                        if (si-start_pos > 0) {
+                            state_list.push_back(st.substr(start_pos,si-start_pos));
+                            start_pos = si+1;
+                        }
                     }
-                    st = s->state_uid();
                 }
-                transitions[i]->attr_->in_state_ = st;
+                state_list.push_back(st.substr(start_pos));
+
+                for (size_t si=0; si < state_list.size(); ++si) {
+                    if (!self_->machine_->is_unique_id(state_list[si])) {
+                        State *s = self_->findState(state_list[si]);
+                        if (!s) {
+                            assert (0 && "can't find state for In() check.");
+                            continue;
+                        }
+                        state_list[si] = s->state_uid();
+                    }
+                }
+                transitions[i]->attr_->in_state_ = state_list;
             } else {
                 boost::function<bool()> s;
                 if (self_->machine_->GetCondSlot (cond, s)) {
