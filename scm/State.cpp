@@ -573,6 +573,12 @@ void State::PRIVATE::connect_transitions_conds(vector< boost::shared_ptr< Transi
                             continue;
                         }
                         state_list[si] = s->state_uid();
+                    } else {
+                        State *s = self_->findState(state_list[si]);
+                        if (!s) {
+                            assert (0 && "can't find state for In() check.");
+                            continue;
+                        }
                     }
                 }
                 transitions[i]->attr_->in_state_ = state_list;
