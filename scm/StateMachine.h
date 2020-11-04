@@ -192,7 +192,7 @@ public:
     }
 
 	void registerTimedEvent(float after_t, std::string const&event_e) { registerTimedEvent(after_t, event_e, false); }
-	TimedEventType * registerTimedEvent_cancelable(float after_t, std::string const&event_e) { registerTimedEvent(after_t, event_e, true); }
+	TimedEventType * registerTimedEvent_cancelable(float after_t, std::string const&event_e) { return registerTimedEvent(after_t, event_e, true); }
 	void clearTimedEvents ();
     void pumpTimedEvents ();
 
