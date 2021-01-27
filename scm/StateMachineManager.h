@@ -10,7 +10,7 @@ class StateMachineManager: public Uncopyable
 {
 public:
     static StateMachineManager *instance ();
-    void release_instance ();
+    static void release_instance ();
     
     StateMachineManager ();
     ~StateMachineManager();

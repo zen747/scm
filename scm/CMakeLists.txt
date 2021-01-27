@@ -1,5 +1,4 @@
-cmake_minimum_required (VERSION 2.8.12)
-
+cmake_minimum_required(VERSION 3.0)
 # project name, statechart machine
 PROJECT(scm)
 
@@ -22,7 +21,9 @@ set (STATE_SRCS
     State.h
 )
 
-add_library(scm STATIC ${STATE_SRCS})
+add_library(scm_static STATIC ${STATE_SRCS})
+add_library(scm SHARED ${STATE_SRCS})
+install (TARGETS scm_static DESTINATION lib)
 install (TARGETS scm DESTINATION lib)
 
 add_subdirectory(tests)
