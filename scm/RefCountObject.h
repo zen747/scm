@@ -39,20 +39,66 @@ private:
     }
 };
 
-class RefCountObjectGuard
+template <typename T> class RefCountObjectGuard
 {
-    RefCountObject *obj_;
+    T *obj_;
+
 public:
-    RefCountObjectGuard (RefCountObject *obj=0);
-    ~RefCountObjectGuard ();
-    RefCountObjectGuard (RefCountObjectGuard const&rhs);
-    RefCountObjectGuard &operator=(RefCountObjectGuard const&rhs);
-    RefCountObjectGuard &operator=(RefCountObject *obj);
-    RefCountObject *operator-> () {
+    T *operator-> () const {
         return obj_;
     }
-    void reset (RefCountObject *obj=0);
+    
+    T &operator* () const {
+        return *obj_;
+    }
+
+	RefCountObjectGuard(T *obj=0)
+		:obj_(obj)
+	{
+		if (obj_) obj_->retain();
+	}
+
+	~RefCountObjectGuard()
+	{
+		if (obj_) obj_->release();
+	}
+
+	RefCountObjectGuard(RefCountObjectGuard const&rhs)
+	{
+		if (rhs.obj_) rhs.obj_->retain();
+		obj_ = rhs.obj_;
+	}
+
+	RefCountObjectGuard &operator=(RefCountObjectGuard const&rhs)
+	{
+		if (rhs.obj_) rhs.obj_->retain();
+		if (obj_) obj_->release();
+		obj_ = rhs.obj_;
+		return *this;
+	}
+
+	RefCountObjectGuard &operator=(T *obj)
+	{
+		if (obj) obj->retain();
+		if (obj_) obj_->release();
+		obj_ = obj;
+		return *this;
+	}
+
+	void reset(T *obj=0)
+	{
+		if (obj) obj->retain();
+		if (obj_) obj_->release();
+		obj_ = obj;
+	}
+
+	T *get() const
+	{
+        return obj_;
+    }
 };
+
+typedef RefCountObjectGuard<RefCountObject> rco_guard;
 
 /** 呼叫了 autorelease 的物件會被放在這邊， 呼叫AutoReleasePool::pumpPools時無人reference的物件會被解構。
  * Objects invoked autorelease() will be placed in AutoReleasePool, when AutoReleasePool::pumpPools() invoked, objects without references will be destructed.

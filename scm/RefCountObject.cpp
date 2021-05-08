@@ -36,47 +36,6 @@ void RefCountObject::autorelease ()
     AutoReleasePool::currentPool().addToAutoreleasePool (this);
 }
 
-
-RefCountObjectGuard::RefCountObjectGuard (RefCountObject *obj)
-    :obj_(obj)
-{
-    if (obj_) obj_->retain ();
-}
-
-RefCountObjectGuard::~RefCountObjectGuard ()
-{
-    if (obj_) obj_->release ();
-}
-
-RefCountObjectGuard::RefCountObjectGuard (RefCountObjectGuard const&rhs)
-{
-    if (rhs.obj_) rhs.obj_->retain ();
-    obj_ = rhs.obj_;
-}
-
-RefCountObjectGuard &RefCountObjectGuard::operator=(RefCountObjectGuard const&rhs)
-{
-    if (rhs.obj_) rhs.obj_->retain ();
-    if (obj_) obj_->release ();
-    obj_ = rhs.obj_;
-    return *this;
-}
-
-RefCountObjectGuard &RefCountObjectGuard::operator=(RefCountObject *obj)
-{
-    if (obj) obj->retain ();
-    if (obj_) obj_->release ();
-    obj_ = obj;
-    return *this;
-}
-
-void RefCountObjectGuard::reset (RefCountObject *obj)
-{
-    if (obj) obj->retain ();
-    if (obj_) obj_->release ();
-    obj_ = obj;
-}
-
 struct AutoReleasePool::PRIVATE
 {
     std::vector<RefCountObject *> objs_;
