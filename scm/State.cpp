@@ -694,6 +694,8 @@ void State::onFrameMove (float t)
 
 void State::pumpNoEvents()
 {
+    if (this->isLeavingState()) return;
+        
     for (size_t i=0; i < no_event_transitions_.size (); ++i) {
         Transition const &tran = *no_event_transitions_[i];
         if (trig_cond (tran)) {
